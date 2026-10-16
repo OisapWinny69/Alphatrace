@@ -1,6 +1,6 @@
-# SignalLens
+# AlphaTrace
 
-SignalLens is a no-login autonomous financial research dashboard for the ATMOS 2026 **Track A — Banking, NBFCs & Financial Services** challenge.
+AlphaTrace is a no-login autonomous financial research dashboard for the ATMOS 2026 **Track A — Banking, NBFCs & Financial Services** challenge.
 
 It is designed around a compute-first research flow:
 
@@ -45,8 +45,8 @@ Keys must never be put into browser code, source control, or logs.
 ## Docker
 
 ```bash
-docker build -t signal-lens .
-docker run --rm -p 8000:8000 signal-lens
+docker build -t alphatrace .
+docker run --rm -p 8000:8000 alphatrace
 ```
 
 Open <http://127.0.0.1:8000> after the container starts.

@@ -1,10 +1,10 @@
-# SignalLens Product Requirements Document
+# AlphaTrace Product Requirements Document
 
 ## 1. Product overview
 
 ### Product name
 
-**SignalLens**
+**AlphaTrace**
 
 ### Product type
 
@@ -16,11 +16,11 @@ No-login web application for autonomous financial research.
 
 ### One-line description
 
-> SignalLens investigates public financial information, detects non-obvious divergences across time and peers, challenges its own conclusions, and produces one auditable financial discovery.
+> AlphaTrace investigates public financial information, detects non-obvious divergences across time and peers, challenges its own conclusions, and produces one auditable financial discovery.
 
 ### Core product principle
 
-SignalLens must not behave like a finance chatbot, news summarizer, generic report generator, single-document question-answering tool, stock-price prediction system, or investment recommendation engine. It must behave like an autonomous research investigator:
+AlphaTrace must not behave like a finance chatbot, news summarizer, generic report generator, single-document question-answering tool, stock-price prediction system, or investment recommendation engine. It must behave like an autonomous research investigator:
 
 ```text
 Company
@@ -41,7 +41,7 @@ Financial information about Indian listed companies is distributed across quarte
 
 Conventional financial tools usually summarize these documents independently. They often fail to connect facts across documents, compare multiple periods, compare companies against peers, detect narrative-versus-number mismatches, identify changing definitions, test whether a finding is company-specific or sector-wide, or show what evidence would disprove a conclusion.
 
-SignalLens addresses this by computing relationships first and asking an AI model to interpret and explain detected patterns second.
+AlphaTrace addresses this by computing relationships first and asking an AI model to interpret and explain detected patterns second.
 
 ## 3. Goals
 
@@ -73,7 +73,7 @@ SignalLens addresses this by computing relationships first and asking an AI mode
 
 ### Non-goals
 
-SignalLens will not provide buy/sell recommendations, predict stock prices, manage portfolios, execute trades, require user accounts in the first release, use paid or proprietary financial datasets, pretend that five company-authored documents are five independent sources, allow the LLM to invent URLs or perform unchecked arithmetic, or hide uncertainty and failed falsification tests.
+AlphaTrace will not provide buy/sell recommendations, predict stock prices, manage portfolios, execute trades, require user accounts in the first release, use paid or proprietary financial datasets, pretend that five company-authored documents are five independent sources, allow the LLM to invent URLs or perform unchecked arithmetic, or hide uncertainty and failed falsification tests.
 
 ## 4. Target users
 
@@ -101,7 +101,7 @@ The landing page requires no login.
 
 Required sections:
 
-- SignalLens brand and positioning statement
+- AlphaTrace brand and positioning statement
 - Track A badge: Banking · NBFCs · Financial Services
 - Company search input
 - Start investigation action
@@ -445,7 +445,7 @@ events
 ## 9. Project structure
 
 ```text
-signal-lens/
+alphatrace/
 ├── app.py
 ├── static/
 │   ├── index.html
@@ -616,7 +616,7 @@ A complete offline run must load the fixture company, resolve it, load peers, ex
 
 ## 16. Definition of done
 
-SignalLens is ready for the hackathon demo when:
+AlphaTrace is ready for the hackathon demo when:
 
 - The app starts without login.
 - The landing page communicates the product within seconds.

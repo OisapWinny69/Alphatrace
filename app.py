@@ -1,4 +1,4 @@
-"""SignalLens web server.
+"""AlphaTrace web server.
 
 The first vertical slice intentionally uses only the Python standard library so
 the dashboard can be run and tested without global installs or API keys.
@@ -23,8 +23,8 @@ STATIC_DIR = ROOT / "static"
 MAX_BODY_BYTES = 64 * 1024
 
 
-class SignalLensHandler(BaseHTTPRequestHandler):
-    server_version = "SignalLens/0.1"
+class AlphaTraceHandler(BaseHTTPRequestHandler):
+    server_version = "AlphaTrace/0.1"
 
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
         # Keep demo output focused on startup and errors.
@@ -79,7 +79,7 @@ class SignalLensHandler(BaseHTTPRequestHandler):
             self._send_file(STATIC_DIR / "index.html")
             return
         if parsed.path == "/api/health":
-            self._send_json({"status": "ok", "mode": os.getenv("SIGNAL_LENS_MODE", "offline")})
+            self._send_json({"status": "ok", "mode": os.getenv("ALPHATRACE_MODE", "offline")})
             return
         if parsed.path == "/api/companies":
             self._send_json({"companies": supported_companies()})
@@ -129,17 +129,17 @@ class SignalLensHandler(BaseHTTPRequestHandler):
 
 
 def start_server() -> None:
-    host = os.getenv("SIGNAL_LENS_HOST", "127.0.0.1")
+    host = os.getenv("ALPHATRACE_HOST", "127.0.0.1")
     try:
-        port = int(os.getenv("SIGNAL_LENS_PORT", "8000"))
+        port = int(os.getenv("ALPHATRACE_PORT", "8000"))
     except ValueError:
         port = 8000
-    server = ThreadingHTTPServer((host, port), SignalLensHandler)
-    print(f"SignalLens running at http://{host}:{port}")
+    server = ThreadingHTTPServer((host, port), AlphaTraceHandler)
+    print(f"AlphaTrace running at http://{host}:{port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nSignalLens stopped")
+        print("\nAlphaTrace stopped")
     finally:
         server.server_close()
 
