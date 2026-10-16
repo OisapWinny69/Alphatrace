@@ -1,0 +1,81 @@
+{
+  "periods": ["Q1 FY24", "Q2 FY24", "Q3 FY24", "Q4 FY24", "Q1 FY25", "Q2 FY25"],
+  "target": {
+    "reported_gnpa": [1.10, 1.02, 0.96, 0.88, 0.79, 0.70],
+    "write_off_rate": [0.18, 0.21, 0.24, 0.29, 0.34, 0.37],
+    "loan_book": [100.0, 106.0, 112.0, 119.0, 127.0, 136.0],
+    "credit_cost": [1.45, 1.40, 1.38, 1.36, 1.33, 1.31]
+  },
+  "peers": {
+    "Peer Alpha": {"reported_gnpa": [1.20, 1.15, 1.08, 1.00, 0.94, 0.86]},
+    "Peer Beta": {"reported_gnpa": [1.10, 1.06, 1.00, 0.95, 0.91, 0.88]},
+    "Peer Gamma": {"reported_gnpa": [1.30, 1.25, 1.20, 1.15, 1.10, 1.04]}
+  },
+  "sources": [
+    {
+      "id": "company-results",
+      "title": "Quarterly financial results and asset-quality schedule",
+      "publisher": "Company exchange filing",
+      "publisher_family": "company",
+      "document_type": "Quarterly results",
+      "url": "https://www.nseindia.com/companies-listing/corporate-filings-financial-results",
+      "publication_date": "2026-01-20",
+      "reporting_period": "Q2 FY25",
+      "source_tier": 1,
+      "page": 4,
+      "quote": "Reported gross non-performing assets declined across the six-quarter observation window."
+    },
+    {
+      "id": "company-presentation",
+      "title": "Investor presentation: portfolio quality and credit costs",
+      "publisher": "Company investor relations",
+      "publisher_family": "company",
+      "document_type": "Investor presentation",
+      "url": "https://www.nseindia.com/companies-listing/corporate-filings-announcements",
+      "publication_date": "2026-01-21",
+      "reporting_period": "Q2 FY25",
+      "source_tier": 2,
+      "page": 12,
+      "quote": "Management highlighted continued improvement in headline portfolio asset quality."
+    },
+    {
+      "id": "rbi-context",
+      "title": "Financial Stability Report: scheduled commercial banks and NBFCs",
+      "publisher": "Reserve Bank of India",
+      "publisher_family": "rbi",
+      "document_type": "Sector report",
+      "url": "https://www.rbi.org.in/Scripts/FinancialStabilityReport.aspx",
+      "publication_date": "2025-12-30",
+      "reporting_period": "H2 2025",
+      "source_tier": 3,
+      "page": 38,
+      "quote": "Sector-level asset-quality improvement should be assessed alongside recoveries, slippages, and write-offs."
+    },
+    {
+      "id": "peer-results",
+      "title": "Comparable lender quarterly asset-quality disclosures",
+      "publisher": "Peer exchange filings",
+      "publisher_family": "peer",
+      "document_type": "Peer results",
+      "url": "https://www.bseindia.com/corporates/Comp_Resultsnew.aspx",
+      "publication_date": "2026-01-22",
+      "reporting_period": "Q2 FY25",
+      "source_tier": 5,
+      "page": 6,
+      "quote": "Comparable lenders reported a mixed but generally improving headline GNPA trend."
+    },
+    {
+      "id": "rating-rationale",
+      "title": "Public rating rationale: funding and portfolio monitoring",
+      "publisher": "Public rating-agency rationale",
+      "publisher_family": "rating-agency",
+      "document_type": "Rating rationale",
+      "url": "https://www.crisilratings.com/en/home/our-business/ratings.html",
+      "publication_date": "2026-01-24",
+      "reporting_period": "FY25",
+      "source_tier": 4,
+      "page": 3,
+      "quote": "The portfolio remains monitored for normalization in credit costs as the book expands."
+    }
+  ]
+}
