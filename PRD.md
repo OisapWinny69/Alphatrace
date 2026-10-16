@@ -451,7 +451,7 @@ alphatrace/
 │   ├── index.html
 │   ├── app.js
 │   └── styles.css
-├── signal_lens/
+├── alpha_trace/
 │   ├── models.py
 │   ├── resolver.py
 │   ├── calculations.py

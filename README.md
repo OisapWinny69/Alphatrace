@@ -56,7 +56,7 @@ Open <http://127.0.0.1:8000> after the container starts.
 ```text
 .
 ├── app.py                         # stdlib HTTP server and JSON API
-├── signal_lens/
+├── alpha_trace/
 │   ├── calculations.py            # deterministic financial math
 │   ├── engine.py                  # offline autonomous research pipeline
 │   ├── models.py                  # typed dataclasses and serialization

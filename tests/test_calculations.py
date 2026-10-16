@@ -1,6 +1,6 @@
 import unittest
 
-from signal_lens.calculations import cagr, delta, evidence_strength, pct_change, persistence, z_score
+from alpha_trace.calculations import cagr, delta, evidence_strength, pct_change, persistence, z_score
 
 
 class CalculationTests(unittest.TestCase):

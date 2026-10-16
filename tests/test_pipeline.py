@@ -1,7 +1,7 @@
 import unittest
 
-from signal_lens.engine import run_research
-from signal_lens.resolver import resolve_company, supported_companies
+from alpha_trace.engine import run_research
+from alpha_trace.resolver import resolve_company, supported_companies
 
 
 class PipelineTests(unittest.TestCase):

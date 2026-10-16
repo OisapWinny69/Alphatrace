@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN python -m compileall -q app.py signal_lens tests
+RUN python -m compileall -q app.py alpha_trace tests
 
 EXPOSE 8000
 

@@ -14,8 +14,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from signal_lens.engine import run_research
-from signal_lens.resolver import resolve_company, supported_companies
+from alpha_trace.engine import run_research
+from alpha_trace.resolver import resolve_company, supported_companies
 
 
 ROOT = Path(__file__).resolve().parent
