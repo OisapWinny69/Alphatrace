@@ -95,7 +95,10 @@ class LiveEngineTests(unittest.TestCase):
         self.assertTrue(any(event.action == "run_red_team" for event in report.events))
 
     def test_live_engine_with_missing_search_configuration_withholds_discovery(self):
-        report = run_live_research("HDFCBANK", TavilySearchProvider(api_key=""))
+        report = run_live_research(
+            "HDFCBANK",
+            search_provider=TavilySearchProvider(api_key=""),
+        )
         self.assertIn("No strong discovery found", report.discovery)
         self.assertEqual(report.evidence_strength, "Weak")
         self.assertTrue(all(test.status == "INCONCLUSIVE" for test in report.falsification_tests))

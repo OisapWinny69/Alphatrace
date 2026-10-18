@@ -4,6 +4,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from urllib.request import Request, urlopen
 
 import app
@@ -52,7 +53,9 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(replay["events"], events["items"])
 
     def test_live_mode_with_no_search_key_returns_an_honest_weak_report(self):
-        created = self._json("POST", "/api/research", {"query": "HDFCBANK", "mode": "live"})
+        # The test must stay offline even when the developer's .env has a live key.
+        with patch.dict(os.environ, {"TAVILY_API_KEY": ""}, clear=False):
+            created = self._json("POST", "/api/research", {"query": "HDFCBANK", "mode": "live"})
         self.assertEqual(created["report"]["mode"], "live")
         self.assertIn("No strong discovery found", created["report"]["discovery"])
         self.assertEqual(created["report"]["evidence_strength"], "Weak")

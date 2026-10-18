@@ -301,7 +301,9 @@ class TavilySearchProvider:
     endpoint = "https://api.tavily.com/search"
 
     def __init__(self, api_key: str | None = None, opener: Callable[..., Any] = urlopen) -> None:
-        self.api_key = api_key or os.getenv("TAVILY_API_KEY", "")
+        # ``""`` is an intentional disabled value for offline tests and
+        # callers that want to override a configured process environment.
+        self.api_key = os.getenv("TAVILY_API_KEY", "") if api_key is None else api_key
         self.opener = opener
 
     def search(self, query: str, max_results: int = 8) -> list[SearchResult]:

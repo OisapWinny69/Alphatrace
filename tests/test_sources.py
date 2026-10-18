@@ -10,6 +10,7 @@ from alpha_trace.sources import (
     PublicSourceFetcher,
     RetrievedDocument,
     SourceError,
+    TavilySearchProvider,
     parse_document,
     validate_public_url,
     verify_quote,
@@ -62,6 +63,11 @@ class SourceTests(unittest.TestCase):
             large_response.read.return_value = b"x" * 101
             with self.assertRaisesRegex(SourceError, "size limit"):
                 PublicSourceFetcher(cache=cache, opener=Mock(return_value=large_response), max_bytes=100).fetch("https://example.com/large")
+
+    def test_empty_search_key_explicitly_disables_configured_environment_key(self):
+        provider = TavilySearchProvider(api_key="")
+        with self.assertRaisesRegex(SourceError, "not configured"):
+            provider.search("test")
 
 
 if __name__ == "__main__":
