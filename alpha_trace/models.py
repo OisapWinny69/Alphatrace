@@ -32,6 +32,7 @@ class CompanyIdentity:
     exchange: str
     peers: tuple[str, ...]
     ir_url: str
+    metric_pack: str = ""
 
 
 @dataclass(frozen=True)

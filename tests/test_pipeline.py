@@ -16,6 +16,13 @@ class PipelineTests(unittest.TestCase):
     def test_supported_universe_has_track_a_companies(self):
         self.assertIn("HDFCBANK", supported_companies())
         self.assertIn("SBILIFE", supported_companies())
+        self.assertIn("ICICIPRULI", supported_companies())
+        self.assertIn("BANKBARODA", supported_companies())
+
+    def test_resolver_selects_metric_pack_for_each_business_model(self):
+        self.assertEqual(resolve_company("HDFCBANK").metric_pack, "bank_asset_quality")
+        self.assertEqual(resolve_company("Muthoot Finance").metric_pack, "nbfc_asset_quality")
+        self.assertEqual(resolve_company("LIC").metric_pack, "insurance_quality")
 
     def test_unknown_company_is_not_silently_invented(self):
         self.assertIsNone(resolve_company("NOTAREALCOMPANY"))
