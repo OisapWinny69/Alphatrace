@@ -342,7 +342,7 @@ def draw_page_two() -> Canvas:
         c.stroke_rect(cx, cy, cell_w, cell_h, LIGHT, 0.5)
         c.text(cx + 7, cy + 6, label, 6.2, "F2", ACCENT)
         c.wrapped(cx + 7, cy + 17, detail, cell_w - 14, 6.8, 8.0, "F3", MUTED, max_lines=2)
-    c.text(wire_x + 8, 512, "A click on any major claim opens its document, page, passage, period and calculation trace.", 6.8, "F3", ACCENT)
+    c.text(wire_x + 8, 536, "A click on any major claim opens its document, page, passage, period and calculation trace.", 6.8, "F3", ACCENT)
 
     gen_x = MARGIN
     gen_y = 557
