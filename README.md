@@ -45,6 +45,13 @@ Copy `.env.example` to `.env` for local configuration. The current offline verti
 
 Keys must never be put into browser code, source control, or logs.
 
+Live-source boundaries are implemented with the standard library in
+`alpha_trace/sources.py`: candidate search results are separated from fetched
+documents, public URLs are validated, documents are cached outside `static/`,
+HTML is parsed into visible text, and quotes are marked `verified`,
+`normalized_match`, or `failed`. PDF parsing remains an explicit adapter
+boundary so unverifiable PDF claims are not silently promoted to evidence.
+
 ## Docker
 
 ```bash
