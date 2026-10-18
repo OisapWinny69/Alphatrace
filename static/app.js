@@ -64,9 +64,10 @@ function renderStages(activeIndex, complete = false) {
 
 function lineChart(metrics) {
   const periods = Array.isArray(metrics.periods) ? metrics.periods : [];
+  const secondaryLabel = metrics.secondary_label || "Write-off adjusted";
   const series = [
     { label: "Reported GNPA", values: metrics.reported_gnpa || [], color: "#c9f36b" },
-    { label: "Write-off adjusted", values: metrics.writeoff_adjusted_gnpa || [], color: "#73e6dc" },
+    { label: secondaryLabel, values: metrics.writeoff_adjusted_gnpa || [], color: "#73e6dc" },
     { label: "Peer average", values: metrics.peer_average_gnpa || [], color: "#ffb86b" },
   ].filter((item) => Array.isArray(item.values) && item.values.length > 0);
   if (!periods.length || !series.length) {
@@ -97,10 +98,12 @@ function lineChart(metrics) {
 function calculationTiles(report) {
   const metrics = report.metrics || {};
   if (Array.isArray(metrics.reported_gnpa) && metrics.reported_gnpa.length > 0) {
+    const secondary = Array.isArray(metrics.secondary_values) && metrics.secondary_values.length > 0 ? metrics.secondary_values : metrics.write_off_rate;
+    const secondaryLabel = metrics.secondary_label || "Write-off rate";
     return [
       ["Headline GNPA", `${formatNumber(metrics.reported_gnpa[0])}% → ${formatNumber(metrics.reported_gnpa.at(-1))}%`, "reported"],
-      ["Adjusted improvement", `${formatNumber(metrics.adjusted_improvement)} pp`, "write-off adjusted"],
-      ["Write-off rate", `${formatNumber(metrics.write_off_rate?.[0])}% → ${formatNumber(metrics.write_off_rate?.at(-1))}%`, "observation window"],
+      ["Adjusted comparison", `${formatNumber(metrics.adjusted_improvement)} pp`, `${metrics.secondary_label || "write-off"} adjusted`],
+      [secondaryLabel, secondary?.length ? `${formatNumber(secondary[0])}% → ${formatNumber(secondary.at(-1))}%` : "Not available", secondary?.length ? "observation window" : "coverage gap"],
       ["Loan-book growth", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book[0])} → ${formatNumber(metrics.loan_book.at(-1))}` : "Not available", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book.at(-1) / metrics.loan_book[0] * 100 - 100)}% total` : "coverage gap"],
     ];
   }
@@ -162,7 +165,7 @@ function renderReport(report) {
       <article class="report-card"><div class="report-label">Why it matters</div><ul class="why-list">${report.why_it_matters.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article>
       <article class="report-card score-panel"><div><div class="report-label">Evidence strength</div><div class="big-score">${escapeHtml(report.evidence_strength)} <span>signal</span></div></div><p class="score-copy">${escapeHtml(report.strength_reasoning)}</p><div class="score-copy">${passedTests} / ${report.falsification_tests.length} falsification tests survived.</div></article>
        <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${tiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
-      <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>Reported GNPA</span><span>Write-off adjusted</span><span>Peer average</span></div></article>
+       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>Reported GNPA</span><span>${escapeHtml(metrics.secondary_label || "Write-off adjusted")}</span><span>Peer average</span></div></article>
       <article class="report-card full"><div class="report-label">Timeline</div><div class="timeline">${report.timeline.map((event) => `<div class="timeline-item ${event.tone === "challenge" ? "challenge" : ""}"><small>${escapeHtml(event.period)}</small><strong>${escapeHtml(event.label)}</strong><p>${escapeHtml(event.detail)}</p></div>`).join("")}</div></article>
        <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
        <article class="report-card full"><div class="report-label">Claims ledger · every major conclusion has linked evidence</div><div class="claims-list">${renderClaims(report.claims || [], report.evidence)}</div></article>

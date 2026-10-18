@@ -1,7 +1,7 @@
 import hashlib
 import unittest
 
-from alpha_trace.live_engine import run_live_research
+from alpha_trace.live_engine import _metric_value_is_locally_supported, run_live_research
 from alpha_trace.sources import RetrievedDocument, SearchResult, TavilySearchProvider
 
 
@@ -78,6 +78,12 @@ class InsurerAI:
 
 
 class LiveEngineTests(unittest.TestCase):
+    def test_fact_validation_rejects_a_nearby_unrelated_annual_report_number(self):
+        misleading = "Gross NPA               from 0.39% in FY24"
+        direct = "Gross NPA ratio was 1.15% for the year"
+        self.assertFalse(_metric_value_is_locally_supported(misleading, "reported_gnpa", 0.39, misleading))
+        self.assertTrue(_metric_value_is_locally_supported(direct, "reported_gnpa", 1.15, direct))
+
     def test_live_engine_uses_verified_sources_and_deterministic_calculations(self):
         report = run_live_research(
             "HDFCBANK",
@@ -89,7 +95,9 @@ class LiveEngineTests(unittest.TestCase):
         self.assertIn("differs", report.discovery)
         self.assertEqual(report.metrics["headline_improvement"], 0.4)
         self.assertEqual(report.metrics["adjusted_improvement"], 0.21)
-        self.assertGreaterEqual(len(report.claims), 1)
+        self.assertGreaterEqual(len(report.claims), 3)
+        self.assertTrue(any(claim.claim_type == "counterargument" for claim in report.claims))
+        self.assertTrue(any(claim.claim_type == "falsification_condition" for claim in report.claims))
         self.assertGreaterEqual(len(report.conflicts), 1)
         self.assertTrue(all(item.verification_status in {"verified", "normalized_match"} for item in report.evidence))
         self.assertTrue(any(event.action == "run_red_team" for event in report.events))

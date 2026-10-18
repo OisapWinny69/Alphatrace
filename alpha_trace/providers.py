@@ -76,6 +76,8 @@ class OpenAICompatibleProvider:
             "You extract only explicitly stated financial facts from a public document. "
             "Return JSON with a facts array. Never calculate, infer, or invent values. "
             "Each fact must include metric, value, unit, period, quote, and page. "
+            "For tables, extract the latest two or more explicitly labelled periods when the values are visible. "
+            "Use the document's quarter/year label (for example Q2 FY2027 or Sep 2026), never 'unknown' when a label is present. "
             "The quote must be copied verbatim from the supplied document text. "
             f"Allowed metrics: {', '.join(metrics)}."
         )

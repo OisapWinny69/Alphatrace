@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -27,7 +28,7 @@ from .models import VerificationStatus
 
 USER_AGENT = "AlphaTrace/0.2 (public-source-research; contact via repository)"
 DEFAULT_TIMEOUT_SECONDS = 15
-DEFAULT_MAX_DOCUMENT_BYTES = 8 * 1024 * 1024
+DEFAULT_MAX_DOCUMENT_BYTES = 32 * 1024 * 1024
 
 
 class SourceError(RuntimeError):
@@ -62,6 +63,7 @@ class ParsedDocument:
     content_type: str
     page_count: int | None = None
     pages: tuple[str, ...] = ()
+    period_hint: str = ""
 
 
 @dataclass(frozen=True)
@@ -232,17 +234,30 @@ def parse_document(document: RetrievedDocument) -> ParsedDocument:
         executable = shutil.which("pdftotext")
         if not executable:
             raise SourceError("PDF parser is unavailable; install poppler-utils or configure a parser adapter")
+        pdf_path = ""
+        text_path = ""
         try:
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as pdf_file:
+                pdf_file.write(document.body)
+                pdf_path = pdf_file.name
+            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as text_file:
+                text_path = text_file.name
             result = subprocess.run(
-                [executable, "-layout", "-", "-"],
-                input=document.body,
+                [executable, "-layout", pdf_path, text_path],
                 capture_output=True,
                 check=True,
                 timeout=30,
             )
+            text = Path(text_path).read_text(encoding="utf-8", errors="replace")
         except (OSError, subprocess.SubprocessError) as error:
             raise SourceError(f"PDF parsing failed: {error}") from error
-        text = result.stdout.decode("utf-8", errors="replace")
+        finally:
+            for temporary_path in (pdf_path, text_path):
+                if temporary_path:
+                    try:
+                        Path(temporary_path).unlink(missing_ok=True)
+                    except OSError:
+                        pass
         pages = tuple(page.strip() for page in text.split("\f") if page.strip())
         return ParsedDocument(
             url=document.final_url,

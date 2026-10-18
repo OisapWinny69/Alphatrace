@@ -51,7 +51,7 @@ _METRICS = {
 }
 
 
-def _publisher_metadata(url: str) -> tuple[str, int, str]:
+def _publisher_metadata(url: str, company_symbol: str = "") -> tuple[str, int, str]:
     hostname = url.split("//", 1)[-1].split("/", 1)[0].lower()
     if "rbi.org.in" in hostname:
         return "Reserve Bank of India", 3, "rbi"
@@ -63,11 +63,75 @@ def _publisher_metadata(url: str) -> tuple[str, int, str]:
         return hostname, 4, "rating-agency"
     if "nseindia" in hostname or "bseindia" in hostname:
         return hostname, 1, "exchange"
+    symbol_token = re.sub(r"[^a-z0-9]", "", company_symbol.lower())
+    if symbol_token and symbol_token in re.sub(r"[^a-z0-9]", "", hostname):
+        return hostname, 2, "company"
+    if hostname.endswith(".bank.in") or hostname.endswith(".insurance.in"):
+        return hostname, 2, "company"
     return hostname, 6, hostname
 
 
 def _document_id(url: str) -> str:
     return f"doc-{hashlib.sha256(url.encode('utf-8')).hexdigest()[:12]}"
+
+
+def _normalize_period(period: str) -> str:
+    """Normalize common Indian reporting labels to stable comparison keys."""
+
+    value = re.sub(r"\s+", " ", period.replace("’", "'").strip())
+    quarter = re.search(r"\bQ\s*([1-4])\s*(?:FY|F\.Y\.?|FINANCIAL\s+YEAR)?\s*[' ]?(\d{2,4})\b", value, re.IGNORECASE)
+    if quarter:
+        year = int(quarter.group(2))
+        if year < 100:
+            year += 2000
+        if year < 2000 or year > date.today().year + 1:
+            return "unknown"
+        return f"Q{quarter.group(1)} FY{year}"
+    fiscal_year = re.search(r"\bFY\s*[' ]?(\d{2,4})\b", value, re.IGNORECASE)
+    if fiscal_year:
+        year = int(fiscal_year.group(1))
+        if year < 100:
+            year += 2000
+        if year < 2000 or year > date.today().year + 1:
+            return "unknown"
+        return f"FY{year}"
+    fiscal_range = re.search(r"\b(20\d{2})[-/]([0-9]{2,4})\b", value)
+    if fiscal_range:
+        end_year = int(fiscal_range.group(2))
+        if end_year < 100:
+            end_year += 2000
+        if 2000 <= end_year <= date.today().year + 1:
+            return f"FY{end_year}"
+    month_year = re.search(r"\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[' -]?(\d{2,4})\b", value, re.IGNORECASE)
+    if month_year:
+        month = month_year.group(1).upper()[:3]
+        year = int(month_year.group(2))
+        if year < 100:
+            year += 2000
+        if year < 2000 or year > date.today().year + 1:
+            return "unknown"
+        month_to_quarter = {"MAR": 4, "JUN": 1, "SEP": 2, "DEC": 3}
+        quarter_number = month_to_quarter.get(month)
+        if quarter_number:
+            fy_year = year + 1 if month != "MAR" else year
+            return f"Q{quarter_number} FY{fy_year}"
+        return f"{month} {year}"
+    return value if value and value.lower() != "unknown" else "unknown"
+
+
+def _infer_period(*texts: str) -> str:
+    combined = " ".join(text for text in texts if text)
+    patterns = (
+        r"\bQ\s*[1-4]\s*(?:FY|F\.Y\.?|FINANCIAL\s+YEAR)?\s*[' ]?\d{2,4}\b",
+        r"\bFY\s*[' ]?\d{2,4}\b",
+        r"\b20\d{2}[-/]\d{2,4}\b",
+        r"\b(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[' -]?\d{2,4}\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, combined, re.IGNORECASE)
+        if match:
+            return _normalize_period(match.group(0))
+    return "unknown"
 
 
 def _period_key(period: str, fallback: int = 0) -> tuple[int, int, int]:
@@ -84,6 +148,10 @@ def _period_key(period: str, fallback: int = 0) -> tuple[int, int, int]:
         if parsed < 100:
             parsed += 2000
         return parsed, 0, fallback
+    month = re.search(r"\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\s+(\d{4})\b", normalized)
+    if month:
+        month_number = {"JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6, "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12}[month.group(1)]
+        return int(month.group(2)), month_number, fallback
     return 0, 0, fallback
 
 
@@ -97,9 +165,15 @@ def _document_records(
     parsed_by_id: dict[str, ParsedDocument] = {}
     for index, document in enumerate(documents):
         document_id = _document_id(document.url)
-        publisher, tier, family = _publisher_metadata(document.url)
+        publisher, tier, family = _publisher_metadata(document.url, company)
         candidate = candidate_by_url.get(document.url)
         title = candidate.title if candidate else document.title
+        period_hint = _infer_period(
+            candidate.title if candidate else "",
+            candidate.url if candidate else "",
+            document.title,
+            document.url,
+        )
         source_documents[document_id] = SourceDocument(
             id=document_id,
             title=title,
@@ -108,7 +182,7 @@ def _document_records(
             document_type="PDF" if "pdf" in document.content_type else "HTML",
             url=document.url,
             publication_date=date.today().isoformat(),
-            reporting_period="unknown",
+            reporting_period=period_hint,
             source_tier=tier,
             fixture=False,
             canonical_url=document.url,
@@ -138,13 +212,17 @@ def _fact_from_candidate(
     match = verify_quote(document.text, quote)
     if match.status not in {"verified", "normalized_match"}:
         return None
+    if not _metric_value_is_locally_supported(document.text, metric, value, quote):
+        return None
     try:
         page = max(1, int(item.get("page", 1)))
     except (TypeError, ValueError):
         page = 1
     if document.page_count:
         page = min(page, document.page_count)
-    period = str(item.get("period") or "unknown").strip()
+    period = _normalize_period(str(item.get("period") or "unknown"))
+    if period == "unknown":
+        period = source.reporting_period or _infer_period(document.title, document.url)
     return Fact(
         id=f"fact-{company.lower()}-{metric}-{index}",
         company=company,
@@ -162,6 +240,71 @@ def _fact_from_candidate(
         quote_verification=match.status,
         reported_at=str(item.get("reported_at") or ""),
     )
+
+
+def _metric_value_is_locally_supported(text: str, metric: str, value: float, quote: str = "") -> bool:
+    """Require a metric label and its value to occur together in source text.
+
+    This prevents a model from pairing a nearby but unrelated number from a
+    PDF table layout (a common failure mode in annual-report extraction).
+    """
+
+    terms = {
+        "reported_gnpa": r"(?:GNPA|gross\s+NPA|gross\s+non[- ]performing\s+assets)",
+        "nnpa": r"(?:NNPA|net\s+NPA|net\s+non[- ]performing\s+assets)",
+        "write_off_rate": r"(?:write[- ]offs?|write[- ]off\s+rate)",
+        "credit_cost": r"credit\s+cost",
+        "provision_coverage": r"(?:provision\s+coverage|PCR)",
+        "premium_growth": r"(?:premium|APE|new\s+business\s+premium)",
+        "vnb_margin": r"(?:VNB\s+margin|value\s+of\s+new\s+business\s+margin)",
+        "persistency_13m": r"(?:13[- ]month|13m)[^%\n]{0,30}?persistency",
+        "solvency_ratio": r"solvency\s+ratio",
+    }
+    term = terms.get(metric)
+    if not term:
+        return True
+    number_pattern = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)(?:\s*%)?", re.IGNORECASE)
+    if quote and len(number_pattern.findall(quote)) > 8:
+        # Dense table excerpts often contain peer/segment columns. Require a
+        # shorter narrative quote before accepting the model's pairing.
+        return False
+    excerpt = quote or text
+    paired_pattern = re.compile(
+        r"(?:GNPA|gross\s+NPA)\s*/\s*(?:NNPA|net\s+NPA)[^\d%\n]{0,80}(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)",
+        re.IGNORECASE,
+    )
+    paired = paired_pattern.search(excerpt)
+    if paired and metric in {"reported_gnpa", "nnpa"}:
+        expected = float(paired.group(1) if metric == "reported_gnpa" else paired.group(2))
+        return abs(expected - value) <= 0.0001
+    reversed_pair = re.search(
+        r"(?:GNPA|gross\s+NPA)[^\d%\n]{0,80}(\d+(?:\.\d+)?)\s+(?:and|,|&)\s+(?:NNPA|net\s+NPA)[^\d%\n]{0,30}(\d+(?:\.\d+)?)",
+        excerpt,
+        re.IGNORECASE,
+    )
+    if reversed_pair and metric in {"reported_gnpa", "nnpa"}:
+        expected = float(reversed_pair.group(1) if metric == "reported_gnpa" else reversed_pair.group(2))
+        return abs(expected - value) <= 0.0001
+    local_text = excerpt
+    for term_match in re.finditer(term, text, re.IGNORECASE):
+        # Match against the supplied quote where possible. The full document
+        # can contain another company's table with the same metric label.
+        local_term_match = re.search(term, local_text, re.IGNORECASE)
+        if local_term_match is None:
+            continue
+        window_start = local_term_match.end()
+        window = local_text[window_start : window_start + 48]
+        for number_match in number_pattern.finditer(window):
+            try:
+                candidate = float(number_match.group(1))
+            except ValueError:
+                continue
+            if abs(candidate - value) <= 0.0001:
+                context = local_text[max(0, window_start - 24) : window_start + number_match.end() + 24].lower()
+                if re.search(r"\bfrom\s+\d+(?:\.\d+)?\s*%?\s+in\s+(?:fy|q\d)", context):
+                    continue
+                return True
+    return False
 
 
 def _extract_facts(
@@ -187,13 +330,16 @@ def _extract_facts(
 
 def _series(facts: list[Fact], metric: str) -> list[Fact]:
     selected: dict[str, Fact] = {}
-    for index, fact in enumerate(facts):
-        if fact.metric != metric:
-            continue
-        key = fact.period if fact.period != "unknown" else f"unknown-{index}"
-        if key not in selected:
+    known_facts = [fact for fact in facts if fact.metric == metric and fact.period != "unknown"]
+    # Unknown periods may be useful evidence context, but must never be used
+    # as the endpoints of a temporal calculation.
+    if len(known_facts) < 2:
+        return []
+    for fact in known_facts:
+        key = fact.period
+        if key not in selected or fact.source_tier < selected[key].source_tier:
             selected[key] = fact
-    return sorted(selected.values(), key=lambda item: _period_key(item.period, facts.index(item)))
+    return sorted(selected.values(), key=lambda item: _period_key(item.period, known_facts.index(item)))
 
 
 def _calculation(calculation_id: str, name: str, formula: str, result: float, unit: str, inputs: tuple[str, ...], interpretation: str) -> Calculation:
@@ -371,6 +517,23 @@ def _run_insurer_research(
             confidence=0.65 if source_families >= 2 else 0.45,
             status="validated" if source_families >= 2 else "downgraded",
         ),
+        Claim(
+            id="claim-live-insurer-counterargument",
+            text="Product mix, distribution mix, or reporting definitions may explain the premium-growth/VNB-margin divergence.",
+            claim_type="counterargument",
+            evidence_ids=discovery_evidence,
+            independent_source_families=source_families,
+            confidence=0.55,
+        ),
+        Claim(
+            id="claim-live-insurer-falsification",
+            text="The insurer hypothesis should be reconsidered if later periods show VNB margin improving at least as quickly as premium growth under consistent definitions.",
+            claim_type="falsification_condition",
+            evidence_ids=discovery_evidence,
+            calculation_ids=calculation_ids,
+            independent_source_families=source_families,
+            confidence=0.62,
+        ),
     )
     hypotheses = (
         Hypothesis(
@@ -521,9 +684,10 @@ def run_live_research(
     search = search_provider or TavilySearchProvider()
     collector = PublicSourceCollector(search, fetcher or PublicSourceFetcher(cache=DocumentCache()))
     queries = [
-        f"{identity.name} quarterly results {identity.metric_pack} GNPA NNPA write-offs credit cost",
-        f"{identity.name} investor presentation asset quality {identity.business_model}",
-        f"{identity.name} annual report portfolio quality provisions",
+        f'"{identity.name}" quarterly results GNPA NNPA write-offs credit cost PDF',
+        f'"{identity.name}" investor presentation asset quality Q1 FY26 Q2 FY26',
+        f'"{identity.name}" annual report portfolio quality provisions FY25 FY24',
+        f'"{identity.name}" historical quarterly GNPA NNPA FY24 FY25',
     ]
     if identity.peers:
         queries.append(f"{identity.name} peer comparison asset quality {identity.peers[0]}")
@@ -549,12 +713,42 @@ def run_live_research(
         return _run_insurer_research(identity, mode, evidence, facts, source_documents, warnings, ai_provider)
 
     gnpa = _series(facts, "reported_gnpa")
-    writeoffs = _series(facts, "write_off_rate")
-    if len(gnpa) < 2 or len(writeoffs) < 2:
+    secondary_metric = "write_off_rate"
+    secondary = _series(facts, secondary_metric)
+    if len(secondary) < 2:
+        # Public reports often disclose GNPA and NNPA consistently but do not
+        # publish write-offs. Use the strongest available related metric rather
+        # than discarding an otherwise auditable cross-period report.
+        for candidate_metric in ("nnpa", "credit_cost", "provision_coverage"):
+            candidate_series = _series(facts, candidate_metric)
+            if len(candidate_series) >= 2:
+                secondary_metric = candidate_metric
+                secondary = candidate_series
+                break
+    common_periods = sorted(
+        set(fact.period for fact in gnpa).intersection(fact.period for fact in secondary),
+        key=_period_key,
+    )
+    if len(common_periods) >= 2:
+        # Keep the report focused on the latest comparable window while the
+        # evidence ledger still retains older public reports for context.
+        common_periods = common_periods[-4:]
+        gnpa_by_period = {fact.period: fact for fact in gnpa}
+        secondary_by_period = {fact.period: fact for fact in secondary}
+        gnpa = [gnpa_by_period[period] for period in common_periods]
+        secondary = [secondary_by_period[period] for period in common_periods]
+    if len(gnpa) < 2 or len(secondary) < 2 or len(common_periods) < 2:
         return _report_without_discovery(identity, mode, evidence, facts, source_documents, warnings)
 
     gnpa_start, gnpa_end = gnpa[0], gnpa[-1]
-    writeoff_start, writeoff_end = writeoffs[0], writeoffs[-1]
+    writeoff_start, writeoff_end = secondary[0], secondary[-1]
+    secondary_labels = {
+        "write_off_rate": ("Write-off rate", "write-off-adjusted", "The write-off flow challenges a headline-only improvement narrative."),
+        "nnpa": ("NNPA", "GNPA-versus-NNPA", "NNPA provides a second asset-quality view alongside headline GNPA."),
+        "credit_cost": ("Credit cost", "GNPA-plus-credit-cost", "Credit cost provides a provisioning-flow context when write-offs are unavailable."),
+        "provision_coverage": ("Provision coverage", "GNPA-plus-provision-coverage", "Provision coverage provides a loss-absorption context alongside headline GNPA."),
+    }
+    secondary_label, secondary_short_label, secondary_interpretation = secondary_labels[secondary_metric]
     headline_improvement = delta(gnpa_start.value, gnpa_end.value)
     adjusted_improvement = delta(gnpa_start.value + writeoff_start.value, gnpa_end.value + writeoff_end.value)
     calculations = (
@@ -569,21 +763,21 @@ def run_live_research(
         ),
         _calculation(
             "calc-live-adjusted-improvement",
-            "Write-off-adjusted improvement",
-            "(earliest GNPA + earliest write-off rate) − (latest GNPA + latest write-off rate)",
+            f"{secondary_label}-adjusted GNPA comparison",
+            f"(earliest GNPA + earliest {secondary_label}) − (latest GNPA + latest {secondary_label})",
             adjusted_improvement,
             "percentage points",
             (gnpa_start.id, gnpa_end.id, writeoff_start.id, writeoff_end.id),
-            "The combined stock-plus-flow measure is compared with headline GNPA.",
+            secondary_interpretation,
         ),
         _calculation(
-            "calc-live-writeoff-change",
-            "Write-off rate change",
-            "latest write-off rate − earliest write-off rate",
+            "calc-live-secondary-change",
+            f"{secondary_label} change",
+            f"latest {secondary_label} − earliest {secondary_label}",
             delta(writeoff_end.value, writeoff_start.value),
             "percentage points",
             (writeoff_start.id, writeoff_end.id),
-            "A rising write-off rate challenges a headline-only improvement narrative.",
+            secondary_interpretation,
         ),
     )
     calculation_ids = tuple(item.id for item in calculations)
@@ -597,7 +791,7 @@ def run_live_research(
     claims = (
         Claim(
             id="claim-live-discovery",
-            text=f"{identity.name}'s headline GNPA improvement differs from its write-off-adjusted improvement across verified periods.",
+            text=f"{identity.name}'s headline GNPA improvement differs from its {secondary_short_label} comparison across verified periods.",
             claim_type="discovery",
             evidence_ids=discovery_evidence,
             calculation_ids=calculation_ids,
@@ -605,16 +799,33 @@ def run_live_research(
             confidence=0.65 if source_families >= 2 else 0.45,
             status="validated" if source_families >= 2 else "downgraded",
         ),
+        Claim(
+            id="claim-live-counterargument",
+            text=f"Recoveries, seasoning, product mix, or definition changes may explain the GNPA/{secondary_label} divergence without hidden deterioration.",
+            claim_type="counterargument",
+            evidence_ids=discovery_evidence,
+            independent_source_families=source_families,
+            confidence=0.55,
+        ),
+        Claim(
+            id="claim-live-falsification",
+            text=f"The hypothesis should be reconsidered if later periods show the {secondary_label} relationship moving in the same direction as headline GNPA under consistent definitions.",
+            claim_type="falsification_condition",
+            evidence_ids=discovery_evidence,
+            calculation_ids=calculation_ids,
+            independent_source_families=source_families,
+            confidence=0.62,
+        ),
     )
     hypotheses = (
         Hypothesis(
             id="hyp-live-stock-flow",
-            statement="Headline asset-quality improvement may be partly flow-driven because write-off-adjusted improvement differs from the stock measure.",
+            statement=f"Headline asset-quality improvement may be less complete than it appears because the {secondary_short_label} comparison differs from the stock measure.",
             lens="Stock versus flow",
             score=78.0,
             supporting_evidence_ids=discovery_evidence,
             opposing_evidence_ids=(),
-            alternative_explanation="Recoveries, portfolio seasoning, or a normalizing credit cycle may improve both measures without hidden deterioration.",
+            alternative_explanation="Recoveries, portfolio seasoning, product mix, or a normalizing credit cycle may improve both measures without hidden deterioration.",
             status="survived",
         ),
         Hypothesis(
@@ -681,10 +892,10 @@ def run_live_research(
                     source_b_id=evidence_source_b.source_document_id,
                     claim_a=evidence_source_a.claim,
                     claim_b=evidence_source_b.claim,
-                    metric_or_topic="Asset quality",
+                    metric_or_topic=f"Asset quality and {secondary_label}",
                     period=gnpa_end.period,
                     severity="material",
-                    possible_explanation="The documents may report different measures or scopes; the discrepancy must be checked before treating it as company-specific.",
+                    possible_explanation=f"The documents may report different measures or scopes; {secondary_label} may be a different construct from headline GNPA.",
                     resolution_status="open",
                     evidence_ids=discovery_evidence,
                     calculation_ids=calculation_ids,
@@ -701,7 +912,7 @@ def run_live_research(
         ResearchEvent(1, "resolve", "resolve_company", f"Resolved {identity.symbol} as {identity.name}."),
         ResearchEvent(2, "collect", "discover_sources", f"Retrieved {len(source_documents)} public documents across {len({item.publisher_family for item in evidence})} publisher families.", source_ids=tuple(source_documents)),
         ResearchEvent(3, "extract", "verify_facts", f"Kept {len(facts)} facts after quote verification.", fact_ids=tuple(item.id for item in facts), evidence_ids=discovery_evidence),
-        ResearchEvent(4, "calculate", "calculate_metrics", f"Computed {len(calculations)} deterministic stock-versus-flow metrics.", calculation_ids=calculation_ids),
+        ResearchEvent(4, "calculate", "calculate_metrics", f"Computed {len(calculations)} deterministic GNPA-versus-{secondary_label} metrics.", calculation_ids=calculation_ids),
         ResearchEvent(5, "hypothesize", "generate_hypotheses", f"Generated {len(hypotheses)} competing hypotheses.", hypothesis_ids=tuple(item.id for item in hypotheses)),
         ResearchEvent(6, "challenge", "run_red_team", "Ran five falsification tests; unresolved alternatives remain visible.", evidence_ids=discovery_evidence),
         ResearchEvent(7, "report", "compose_report", "Validated the live claim ledger and evidence trail."),
@@ -710,17 +921,17 @@ def run_live_research(
         run_id=f"live_{hashlib.sha256((identity.symbol + str(date.today())).encode()).hexdigest()[:10]}",
         mode=mode,
         company=identity,
-        discovery=f"{identity.name}'s verified headline GNPA improvement differs from its write-off-adjusted improvement across the retrieved public-source window.",
+        discovery=f"{identity.name}'s verified headline GNPA improvement differs from its {secondary_short_label} comparison across the retrieved public-source window.",
         why_it_matters=(
-            "Headline asset quality and the underlying write-off flow are not interchangeable measures.",
+            f"Headline GNPA and {secondary_label} are not interchangeable measures, so the second metric provides a useful challenge to a headline-only reading.",
             "The result is a monitoring hypothesis, not a prediction or investment recommendation.",
             "Independent publisher-family coverage determines whether the signal remains strong or is downgraded.",
         ),
         evidence=evidence,
         timeline=timeline,
         numbers=calculations,
-        counterargument="Recoveries, portfolio seasoning, a normalizing credit cycle, or a definition mismatch may explain the divergence without hidden deterioration.",
-        falsification_condition="Reconsider this conclusion if two consecutive later periods show falling write-offs and write-off-adjusted GNPA improving at least as quickly as headline GNPA, after confirming consistent definitions.",
+        counterargument=f"Recoveries, portfolio seasoning, product mix, a normalizing credit cycle, or a definition mismatch may explain the GNPA/{secondary_label} divergence without hidden deterioration.",
+        falsification_condition=f"Reconsider this conclusion if two consecutive later periods show the {secondary_label} relationship moving in the same direction as headline GNPA, after confirming consistent definitions.",
         evidence_strength=strength,  # type: ignore[arg-type]
         strength_reasoning=strength_reasoning,
         hypotheses=hypotheses,
@@ -728,10 +939,13 @@ def run_live_research(
         metrics={
             "periods": [gnpa_start.period, gnpa_end.period],
             "reported_gnpa": [safe_round(gnpa_start.value), safe_round(gnpa_end.value)],
-            "write_off_rate": [safe_round(writeoff_start.value), safe_round(writeoff_end.value)],
+            "write_off_rate": [safe_round(writeoff_start.value), safe_round(writeoff_end.value)] if secondary_metric == "write_off_rate" else [],
             "writeoff_adjusted_gnpa": [safe_round(gnpa_start.value + writeoff_start.value), safe_round(gnpa_end.value + writeoff_end.value)],
             "headline_improvement": safe_round(headline_improvement),
             "adjusted_improvement": safe_round(adjusted_improvement),
+            "secondary_metric": secondary_metric,
+            "secondary_label": secondary_label,
+            "secondary_values": [safe_round(writeoff_start.value), safe_round(writeoff_end.value)],
         },
         stages=("Resolve company identity", "Discover public sources", "Verify quotes", "Calculate divergences", "Challenge hypotheses", "Prepare auditable report"),
         notice="LIVE PUBLIC-SOURCE MODE — values and quotes were retrieved and verified from public documents; source coverage warnings remain visible.",
