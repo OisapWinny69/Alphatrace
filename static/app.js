@@ -1,6 +1,10 @@
 const form = document.querySelector("#research-form");
 const queryInput = document.querySelector("#company-query");
 const formError = document.querySelector("#form-error");
+const workspaceError = document.querySelector("#workspace-error");
+const landingLinks = document.querySelector("#landing-links");
+const modeLabel = document.querySelector("#research-mode");
+const modeNote = document.querySelector("#mode-note");
 const landing = document.querySelector("#landing");
 const workspace = document.querySelector("#workspace");
 const workspaceTitle = document.querySelector("#workspace-title");
@@ -17,7 +21,11 @@ let researchMode = "offline";
 fetch("/api/health")
   .then((response) => response.json())
   .then((payload) => {
-    if (payload.mode === "live") researchMode = "live";
+    if (payload.mode === "live") {
+      researchMode = "live";
+      modeLabel.textContent = "Live · public sources";
+      modeNote.textContent = "Research uses public sources. Findings depend on verified coverage.";
+    }
   })
   .catch(() => {});
 
@@ -57,22 +65,27 @@ function renderStages(activeIndex, complete = false) {
     return `<div class="stage-item ${className}">${escapeHtml(stage)}</div>`;
   }).join("");
   const shownIndex = Math.min(activeIndex + 1, stages.length);
-  progressLabel.textContent = complete ? "Research complete — discovery assembled" : stages[activeIndex];
+  progressLabel.textContent = complete ? "Research complete" : stages[activeIndex];
   progressCount.textContent = `${String(shownIndex).padStart(2, "0")} / ${stages.length}`;
   progressFill.style.width = `${complete ? 100 : Math.max(6, (activeIndex / (stages.length - 1)) * 100)}%`;
 }
 
-function lineChart(metrics) {
-  const periods = Array.isArray(metrics.periods) ? metrics.periods : [];
+function chartSeries(metrics) {
   const secondaryLabel = metrics.secondary_label || "Write-off adjusted";
   const series = [
-    { label: "Reported GNPA", values: metrics.reported_gnpa || [], color: "#c9f36b" },
-    { label: secondaryLabel, values: metrics.writeoff_adjusted_gnpa || [], color: "#73e6dc" },
-    { label: "Peer average", values: metrics.peer_average_gnpa || [], color: "#ffb86b" },
+    { label: "Reported GNPA", values: metrics.reported_gnpa || [], color: "#315f4d" },
+    { label: secondaryLabel, values: metrics.writeoff_adjusted_gnpa || [], color: "#657994" },
+    { label: "Peer average", values: metrics.peer_average_gnpa || [], color: "#9b713b" },
   ].filter((item) => Array.isArray(item.values) && item.values.length > 0);
   if (!series.length && Array.isArray(metrics.single_metric_values) && metrics.single_metric_values.length > 0) {
-    series.push({ label: metrics.single_metric_label || "Verified metric", values: metrics.single_metric_values, color: "#c9f36b" });
+    series.push({ label: metrics.single_metric_label || "Verified metric", values: metrics.single_metric_values, color: "#315f4d" });
   }
+  return series;
+}
+
+function lineChart(metrics) {
+  const periods = Array.isArray(metrics.periods) ? metrics.periods : [];
+  const series = chartSeries(metrics);
   if (!periods.length || !series.length) {
     return `<div class="chart-empty">Not enough verified comparable periods to draw a time-series chart.</div>`;
   }
@@ -87,14 +100,14 @@ function lineChart(metrics) {
   const grid = [0, 1, 2, 3].map((tick) => {
     const value = min + ((max - min) * tick) / 3;
     const yy = y(value);
-    return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${yy}" y2="${yy}" stroke="rgba(189,222,242,.12)"/><text x="8" y="${yy + 3}" fill="#71899a" font-size="10">${value.toFixed(1)}%</text>`;
+    return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${yy}" y2="${yy}" stroke="#e3e7df"/><text x="8" y="${yy + 3}" fill="#677069" font-size="10">${value.toFixed(1)}%</text>`;
   }).join("");
   const paths = series.map((item) => {
     const points = item.values.map((value, index) => `${x(index)},${y(Number(value))}`).join(" ");
     const dots = item.values.map((value, index) => `<circle cx="${x(index)}" cy="${y(Number(value))}" r="3" fill="${item.color}"/>`).join("");
     return `<polyline points="${points}" fill="none" stroke="${item.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;
   }).join("");
-  const labels = periods.map((period, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" fill="#71899a" font-size="9">${escapeHtml(period)}</text>`).join("");
+  const labels = periods.map((period, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" fill="#677069" font-size="9">${escapeHtml(period)}</text>`).join("");
   return `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Asset quality trend chart">${grid}${paths}${labels}</svg>`;
 }
 
@@ -180,31 +193,35 @@ function renderReport(report) {
   reportPanel.innerHTML = `
     <div class="report-notice">${escapeHtml(report.notice)}</div>
     <div class="report-grid">
-      <article class="report-card discovery-card full"><div class="report-label">The discovery · ${escapeHtml(company.symbol)} · ${escapeHtml(company.business_model)}</div><span class="strength-chip"><i></i>${escapeHtml(report.evidence_strength)} evidence</span><h3>${escapeHtml(report.discovery)}</h3></article>
+      <article class="report-card discovery-card full"><div class="discovery-heading"><div class="report-label">The finding · ${escapeHtml(company.symbol)} · ${escapeHtml(company.business_model)}</div><span class="strength-chip">${escapeHtml(report.evidence_strength)} evidence</span></div><h3>${escapeHtml(report.discovery)}</h3></article>
       <article class="report-card"><div class="report-label">Why it matters</div><ul class="why-list">${report.why_it_matters.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article>
       <article class="report-card score-panel"><div><div class="report-label">Evidence strength</div><div class="big-score">${escapeHtml(report.evidence_strength)} <span>signal</span></div></div><p class="score-copy">${escapeHtml(report.strength_reasoning)}</p><div class="score-copy">${passedTests} / ${report.falsification_tests.length} falsification tests survived.</div></article>
        <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${tiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
-       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>${escapeHtml(metrics.single_metric_label || "Reported GNPA")}</span><span>${escapeHtml(metrics.single_metric_values ? "Secondary metric unavailable" : (metrics.secondary_label || "Write-off adjusted"))}</span><span>Peer average</span></div></article>
+       <article class="report-card full"><div class="report-label">The numbers over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend">${metrics.periods?.length ? chartSeries(metrics).map((series) => `<span><i style="background:${series.color}" aria-hidden="true"></i>${escapeHtml(series.label)}</span>`).join("") : ""}</div></article>
       <article class="report-card full"><div class="report-label">Timeline</div><div class="timeline">${report.timeline.map((event) => `<div class="timeline-item ${event.tone === "challenge" ? "challenge" : ""}"><small>${escapeHtml(event.period)}</small><strong>${escapeHtml(event.label)}</strong><p>${escapeHtml(event.detail)}</p></div>`).join("")}</div></article>
-       <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
-       <article class="report-card full"><div class="report-label">Claims ledger · every major conclusion has linked evidence</div><div class="claims-list">${renderClaims(report.claims || [], report.evidence)}</div></article>
-       <article class="report-card full"><div class="report-label">Conflicts · what disagrees with the leading story</div><div class="conflicts-list">${renderConflicts(report.conflicts || [])}</div></article>
+       <article class="report-card full"><div class="report-label">Source evidence · open a claim to read the original</div><div class="evidence-list">${renderEvidence(report.evidence) || '<p class="empty-state">No verified source evidence is available for this run.</p>'}</div></article>
        <div class="two-col full"><article class="report-card"><div class="report-label">Counterargument</div><div class="quote-block">${escapeHtml(report.counterargument)}</div></article><article class="report-card"><div class="report-label">Falsification condition</div><div class="falsify-box">${escapeHtml(report.falsification_condition)}</div></article></div>
       <article class="report-card full"><div class="report-label">Falsification tests</div><div class="test-list">${report.falsification_tests.map((test) => `<div class="test-item"><span class="test-status ${test.status.toLowerCase()}">${escapeHtml(test.status)}</span><span class="test-body"><strong>${escapeHtml(test.name)}</strong><p>${escapeHtml(test.explanation)}</p></span></div>`).join("")}</div></article>
-      <article class="report-card full"><div class="report-label">Hypothesis board</div><div class="hypothesis-list">${report.hypotheses.map((hypothesis, index) => `<div class="hypothesis-item"><span class="hypothesis-rank">0${index + 1}</span><span class="hypothesis-body"><strong>${escapeHtml(hypothesis.statement)}</strong><small>${escapeHtml(hypothesis.lens)} · score ${escapeHtml(hypothesis.score)}</small></span><span class="hypothesis-state ${hypothesis.status}">${escapeHtml(hypothesis.status)}</span></div>`).join("")}</div></article>
-       <article class="report-card full"><div class="report-label">Reproducible calculations</div><div class="evidence-list">${report.numbers.map((number) => `<div class="evidence-item"><span class="evidence-tier">fx</span><span class="evidence-body"><strong>${escapeHtml(number.name)} · ${formatNumber(number.result)} ${escapeHtml(number.unit)}</strong><small>${escapeHtml(number.formula)}</small><p>${escapeHtml(number.interpretation)}</p></span></div>`).join("")}</div></article>
-       <article class="report-card full"><div class="report-label">Research trail · replayable decision log</div><div class="trail-list">${renderResearchTrail(report.events || [])}</div></article>
+      <article class="report-card full audit-card"><div class="report-label">Research details</div>
+        <details class="audit-section"><summary>Claims ledger<span>${(report.claims || []).length} claims</span></summary><div class="detail-content claims-list">${renderClaims(report.claims || [], report.evidence) || '<p class="empty-state">No claims recorded.</p>'}</div></details>
+        <details class="audit-section"><summary>Conflicts &amp; contradictions<span>${(report.conflicts || []).length} records</span></summary><div class="detail-content conflicts-list">${renderConflicts(report.conflicts || []) || '<p class="empty-state">No conflicts recorded for this investigation.</p>'}</div></details>
+        <details class="audit-section"><summary>Competing hypotheses<span>${report.hypotheses.length} tested</span></summary><div class="detail-content hypothesis-list">${report.hypotheses.map((hypothesis, index) => `<div class="hypothesis-item"><span class="hypothesis-rank">${String(index + 1).padStart(2, "0")}</span><span class="hypothesis-body"><strong>${escapeHtml(hypothesis.statement)}</strong><small>${escapeHtml(hypothesis.lens)} · score ${escapeHtml(hypothesis.score)}</small></span><span class="hypothesis-state ${escapeHtml(hypothesis.status)}">${escapeHtml(hypothesis.status)}</span></div>`).join("") || '<p class="empty-state">No hypotheses recorded.</p>'}</div></details>
+        <details class="audit-section"><summary>Reproducible calculations<span>${report.numbers.length} calculations</span></summary><div class="detail-content evidence-list">${report.numbers.map((number) => `<div class="evidence-item"><span class="evidence-tier">fx</span><span class="evidence-body"><strong>${escapeHtml(number.name)} · ${formatNumber(number.result)} ${escapeHtml(number.unit)}</strong><small>${escapeHtml(number.formula)}</small><p>${escapeHtml(number.interpretation)}</p></span></div>`).join("") || '<p class="empty-state">Not enough verified data for calculations.</p>'}</div></details>
+        <details class="audit-section"><summary>Research trail<span>${(report.events || []).length} steps</span></summary><div class="detail-content trail-list">${renderResearchTrail(report.events || []) || '<p class="empty-state">No research events recorded.</p>'}</div></details>
+      </article>
      </div>`;
 }
 
 async function runInvestigation(query) {
   formError.textContent = "";
+  workspaceError.textContent = "";
   landing.classList.add("hidden");
+  landingLinks.classList.add("hidden");
   workspace.classList.remove("hidden");
   progressPanel.classList.remove("hidden");
   reportPanel.classList.add("hidden");
   workspaceTitle.textContent = "Preparing your investigation";
-  workspaceSubtitle.textContent = "Building an evidence graph from public sources.";
+  workspaceSubtitle.textContent = "Reviewing filings and comparing the numbers.";
   renderStages(0);
   workspace.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -223,8 +240,8 @@ async function runInvestigation(query) {
     window.clearInterval(timer);
     renderStages(stages.length - 1, true);
     const report = payload.report;
-    workspaceTitle.textContent = `${report.company.name} · research complete`;
-    workspaceSubtitle.textContent = `${report.company.symbol} · ${report.company.business_model} · ${report.evidence.length} evidence records connected`;
+    workspaceTitle.textContent = report.company.name;
+    workspaceSubtitle.textContent = `${report.company.symbol} · ${report.company.business_model} · ${report.evidence.length} evidence records`;
     renderReport(report);
     reportPanel.classList.remove("hidden");
     progressPanel.classList.add("hidden");
@@ -234,7 +251,7 @@ async function runInvestigation(query) {
     progressPanel.classList.add("hidden");
     workspaceTitle.textContent = responseReceived ? "Investigation completed with a display warning" : "Investigation could not start";
     workspaceSubtitle.textContent = responseReceived ? "The server returned a report, but the dashboard could not render it." : "Check the company symbol, server status, and API configuration.";
-    formError.textContent = error.message;
+    workspaceError.textContent = error.message;
   }
 }
 
@@ -254,6 +271,8 @@ document.querySelectorAll("[data-example]").forEach((button) => {
 newResearch.addEventListener("click", () => {
   workspace.classList.add("hidden");
   landing.classList.remove("hidden");
+  landingLinks.classList.remove("hidden");
+  workspaceError.textContent = "";
   reportPanel.innerHTML = "";
   queryInput.focus();
   window.scrollTo({ top: 0, behavior: "smooth" });

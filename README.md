@@ -80,9 +80,9 @@ sequence.
 │   ├── store.py                    # SQLite runs, evidence indexes, and replay events
 │   └── validation.py               # claim/evidence/conflict validation
 ├── static/
-│   ├── index.html                 # no-login landing and dashboard shell
+│   ├── index.html                 # no-login SignalLens landing and dashboard shell
 │   ├── app.js                     # browser workflow and rendering
-│   └── styles.css                 # responsive dark research UI
+│   └── styles.css                 # responsive, minimal light research UI
 ├── tests/
 ├── HACKATHON_PLAN.md
 ├── Makefile
@@ -102,6 +102,15 @@ sequence.
 - The UI labels the current fixture mode clearly.
 - Weak evidence may produce “No strong discovery found” rather than an invented conclusion.
 - The product does not provide investment recommendations.
+
+## Interface
+
+The browser UI is branded **SignalLens**. It uses a neutral light palette,
+system fonts, and a single company-search flow. Research reports lead with the
+finding, numbers, and source evidence; claims, conflicts, hypotheses,
+calculations, and the research trail are available in expandable detail rows.
+The header identifies offline sample data or live public-source mode. All UI
+assets are local, with no font, icon, or JavaScript CDN requirements.
 
 ## Current boundary and roadmap
 
