@@ -14,6 +14,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python -m compileall -q app.py alpha_trace tests
+RUN python -m unittest discover -s tests -v
 
 EXPOSE 8000
 

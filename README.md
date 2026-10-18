@@ -61,6 +61,11 @@ docker run --rm -p 8000:8000 alphatrace
 
 Open <http://127.0.0.1:8000> after the container starts.
 
+The server persists completed runs under `data/runs/` and exposes the audit
+indexes at `/api/runs/{run_id}/events`, `/evidence`, `/claims`, and
+`/conflicts`; `POST /api/runs/{run_id}/replay` returns the persisted event
+sequence.
+
 ## Project structure
 
 ```text

@@ -203,7 +203,7 @@ The UI exposes a compact event timeline with links to the relevant source, fact,
 - Implement configurable bank/NBFC metric extraction and peer comparison.
 - Never map a company to a prewritten result; facts and sources drive the outcome.
 
-**Status:** The first conservative live coordinator is implemented for verified GNPA/write-off-rate stock-versus-flow comparisons, with heuristic extraction, optional structured AI extraction, deterministic calculations, and a no-strong-discovery fallback. Broader metric packs and cold unseen-company validation remain next.
+**Status:** The first conservative live coordinator is implemented for verified GNPA/write-off-rate bank/NBFC stock-versus-flow comparisons and insurer premium-growth/VNB-margin comparisons, with heuristic extraction, optional structured AI extraction, deterministic calculations, and a no-strong-discovery fallback. Broader metric packs and cold unseen-company validation remain next.
 
 ### Step 6 — Challenge and dashboard
 
