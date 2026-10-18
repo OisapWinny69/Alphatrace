@@ -28,10 +28,13 @@ The app starts in offline mode by default. Enter a supported symbol such as `HDF
 ## Run the tests
 
 ```bash
-python -m unittest discover -s tests -v
+make test
 ```
 
 The test suite is offline and verifies the resolver, deterministic calculations, hypothesis ranking, falsification logic, and the complete research pipeline.
+
+The complete implementation strategy, judging-rubric mapping, source policy,
+auditability contracts, and delivery gates are in [`HACKATHON_PLAN.md`](HACKATHON_PLAN.md).
 
 ## Configuration
 
