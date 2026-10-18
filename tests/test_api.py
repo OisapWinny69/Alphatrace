@@ -59,6 +59,8 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(created["report"]["mode"], "live")
         self.assertIn("No strong discovery found", created["report"]["discovery"])
         self.assertEqual(created["report"]["evidence_strength"], "Weak")
+        self.assertIn("verified_fact_count", created["report"]["metrics"])
+        self.assertIn("source_count", created["report"]["metrics"])
 
     def test_env_loader_reads_settings_without_overwriting_process_values(self):
         original_root = app.ROOT

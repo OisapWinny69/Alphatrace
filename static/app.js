@@ -63,12 +63,15 @@ function renderStages(activeIndex, complete = false) {
 }
 
 function lineChart(metrics) {
-  const periods = metrics.periods || [];
+  const periods = Array.isArray(metrics.periods) ? metrics.periods : [];
   const series = [
     { label: "Reported GNPA", values: metrics.reported_gnpa || [], color: "#c9f36b" },
     { label: "Write-off adjusted", values: metrics.writeoff_adjusted_gnpa || [], color: "#73e6dc" },
     { label: "Peer average", values: metrics.peer_average_gnpa || [], color: "#ffb86b" },
-  ];
+  ].filter((item) => Array.isArray(item.values) && item.values.length > 0);
+  if (!periods.length || !series.length) {
+    return `<div class="chart-empty">Not enough verified comparable periods to draw a time-series chart.</div>`;
+  }
   const width = 760;
   const height = 220;
   const pad = { top: 18, right: 18, bottom: 38, left: 42 };
@@ -89,6 +92,32 @@ function lineChart(metrics) {
   }).join("");
   const labels = periods.map((period, index) => `<text x="${x(index)}" y="${height - 12}" text-anchor="middle" fill="#71899a" font-size="9">${escapeHtml(period)}</text>`).join("");
   return `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Asset quality trend chart">${grid}${paths}${labels}</svg>`;
+}
+
+function calculationTiles(report) {
+  const metrics = report.metrics || {};
+  if (Array.isArray(metrics.reported_gnpa) && metrics.reported_gnpa.length > 0) {
+    return [
+      ["Headline GNPA", `${formatNumber(metrics.reported_gnpa[0])}% → ${formatNumber(metrics.reported_gnpa.at(-1))}%`, "reported"],
+      ["Adjusted improvement", `${formatNumber(metrics.adjusted_improvement)} pp`, "write-off adjusted"],
+      ["Write-off rate", `${formatNumber(metrics.write_off_rate?.[0])}% → ${formatNumber(metrics.write_off_rate?.at(-1))}%`, "observation window"],
+      ["Loan-book growth", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book[0])} → ${formatNumber(metrics.loan_book.at(-1))}` : "Not available", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book.at(-1) / metrics.loan_book[0] * 100 - 100)}% total` : "coverage gap"],
+    ];
+  }
+  if (Array.isArray(metrics.premium_growth) && metrics.premium_growth.length > 0) {
+    return [
+      ["Premium growth", `${formatNumber(metrics.premium_growth[0])}% → ${formatNumber(metrics.premium_growth.at(-1))}%`, "verified periods"],
+      ["VNB margin", `${formatNumber(metrics.vnb_margin?.[0])}% → ${formatNumber(metrics.vnb_margin?.at(-1))}%`, "new-business economics"],
+      ["Premium-growth change", `${formatNumber(metrics.premium_growth_change)} pp`, "deterministic calculation"],
+      ["VNB-margin change", `${formatNumber(metrics.vnb_margin_change)} pp`, "deterministic calculation"],
+    ];
+  }
+  return [
+    ["Verified facts", formatNumber(metrics.verified_fact_count, ""), "public-source coverage"],
+    ["Source documents", formatNumber(metrics.source_count, ""), "retrieved or cached"],
+    ["Comparable periods", "Not enough", "discovery withheld"],
+    ["Evidence status", "Weak", "no unsupported conclusion"],
+  ];
 }
 
 function renderEvidence(evidence) {
@@ -125,19 +154,14 @@ function renderReport(report) {
   const company = report.company;
   const metrics = report.metrics;
   const passedTests = report.falsification_tests.filter((test) => test.status === "PASS").length;
-  const calculationTiles = [
-    ["Headline GNPA", `${formatNumber(metrics.reported_gnpa[0])}% → ${formatNumber(metrics.reported_gnpa.at(-1))}%`, "reported"],
-    ["Adjusted improvement", `${formatNumber(metrics.adjusted_improvement)} pp`, "write-off adjusted"],
-    ["Write-off rate growth", `${formatNumber(metrics.write_off_rate[0])}% → ${formatNumber(metrics.write_off_rate.at(-1))}%`, "observation window"],
-    ["Loan-book growth", `${formatNumber(metrics.loan_book[0])} → ${formatNumber(metrics.loan_book.at(-1))}`, `${formatNumber(metrics.loan_book.at(-1) / metrics.loan_book[0] * 100 - 100)}% total`],
-  ];
+  const tiles = calculationTiles(report);
   reportPanel.innerHTML = `
     <div class="report-notice">${escapeHtml(report.notice)}</div>
     <div class="report-grid">
       <article class="report-card discovery-card full"><div class="report-label">The discovery · ${escapeHtml(company.symbol)} · ${escapeHtml(company.business_model)}</div><span class="strength-chip"><i></i>${escapeHtml(report.evidence_strength)} evidence</span><h3>${escapeHtml(report.discovery)}</h3></article>
       <article class="report-card"><div class="report-label">Why it matters</div><ul class="why-list">${report.why_it_matters.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article>
       <article class="report-card score-panel"><div><div class="report-label">Evidence strength</div><div class="big-score">${escapeHtml(report.evidence_strength)} <span>signal</span></div></div><p class="score-copy">${escapeHtml(report.strength_reasoning)}</p><div class="score-copy">${passedTests} / ${report.falsification_tests.length} falsification tests survived.</div></article>
-      <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${calculationTiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
+       <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${tiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>Reported GNPA</span><span>Write-off adjusted</span><span>Peer average</span></div></article>
       <article class="report-card full"><div class="report-label">Timeline</div><div class="timeline">${report.timeline.map((event) => `<div class="timeline-item ${event.tone === "challenge" ? "challenge" : ""}"><small>${escapeHtml(event.period)}</small><strong>${escapeHtml(event.label)}</strong><p>${escapeHtml(event.detail)}</p></div>`).join("")}</div></article>
        <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
@@ -168,10 +192,12 @@ async function runInvestigation(query) {
     renderStages(currentStage);
   }, 250);
 
+  let responseReceived = false;
   try {
      const response = await fetch("/api/research", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query, mode: researchMode }) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "The research run could not start.");
+    responseReceived = true;
     window.clearInterval(timer);
     renderStages(stages.length - 1, true);
     const report = payload.report;
@@ -184,8 +210,8 @@ async function runInvestigation(query) {
   } catch (error) {
     window.clearInterval(timer);
     progressPanel.classList.add("hidden");
-    workspaceTitle.textContent = "Investigation could not start";
-    workspaceSubtitle.textContent = "Check the company symbol and try again.";
+    workspaceTitle.textContent = responseReceived ? "Investigation completed with a display warning" : "Investigation could not start";
+    workspaceSubtitle.textContent = responseReceived ? "The server returned a report, but the dashboard could not render it." : "Check the company symbol, server status, and API configuration.";
     formError.textContent = error.message;
   }
 }
