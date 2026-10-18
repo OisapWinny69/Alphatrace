@@ -8,7 +8,7 @@ It is designed around a compute-first research flow:
 Company → facts → calculations → divergences → hypotheses → falsification → discovery
 ```
 
-The current vertical slice is intentionally dependency-free Python so it can run offline and remain reliable during a demo. It includes a polished browser dashboard, a fixture-backed research engine, deterministic calculations, source-linked evidence cards, a timeline, counterarguments, and falsification tests.
+The current vertical slice is intentionally dependency-free Python so it can run offline and remain reliable during a demo. It includes a polished browser dashboard, a fixture-backed research engine, deterministic calculations, source-linked evidence cards, a claim ledger, conflicts, a replayable research trail, a timeline, counterarguments, and falsification tests. Public-source retrieval and quote-verification boundaries are implemented separately and are designed to fail closed when a document cannot be verified.
 
 ## Requirements
 
@@ -70,12 +70,17 @@ Open <http://127.0.0.1:8000> after the container starts.
 │   ├── calculations.py            # deterministic financial math
 │   ├── engine.py                  # offline autonomous research pipeline
 │   ├── models.py                  # typed dataclasses and serialization
-│   └── resolver.py                # company and peer resolution
+│   ├── resolver.py                # company, peer, and metric-pack resolution
+│   ├── sources.py                  # public URL, cache, HTML, search, quote boundaries
+│   ├── store.py                    # SQLite runs, evidence indexes, and replay events
+│   └── validation.py               # claim/evidence/conflict validation
 ├── static/
 │   ├── index.html                 # no-login landing and dashboard shell
 │   ├── app.js                     # browser workflow and rendering
 │   └── styles.css                 # responsive dark research UI
 ├── tests/
+├── HACKATHON_PLAN.md
+├── Makefile
 ├── PRD.md
 ├── Dockerfile
 ├── .env.example
@@ -93,6 +98,10 @@ Open <http://127.0.0.1:8000> after the container starts.
 - Weak evidence may produce “No strong discovery found” rather than an invented conclusion.
 - The product does not provide investment recommendations.
 
-## Roadmap
+## Current boundary and roadmap
 
-The next milestones are live public-source adapters, page-preserving PDF extraction, exact quote verification, optional structured AI reasoning, peer corpus expansion, SQLite run persistence, and live cold-run testing on an unseen company. The product requirements and security boundaries are documented in `PRD.md`.
+Implemented: public URL validation, bounded HTML retrieval, local document caching, candidate search adapter, exact quote verification, SQLite run persistence, indexed evidence/claim/conflict readback, and replayable research events.
+
+Next: connect fetched public documents to a page-preserving PDF parser and generic metric extraction/structured reasoning provider, then run cold live research on unseen companies. Until that integration is enabled, the browser uses clearly labelled offline fixture mode and never presents synthetic fixture values as live evidence.
+
+The product requirements and security boundaries are documented in `PRD.md`; the execution strategy and finals acceptance gates are in `HACKATHON_PLAN.md`.
