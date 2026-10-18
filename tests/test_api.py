@@ -50,6 +50,12 @@ class ApiTests(unittest.TestCase):
         self.assertGreaterEqual(len(conflicts["items"]), 2)
         self.assertEqual(replay["events"], events["items"])
 
+    def test_live_mode_with_no_search_key_returns_an_honest_weak_report(self):
+        created = self._json("POST", "/api/research", {"query": "HDFCBANK", "mode": "live"})
+        self.assertEqual(created["report"]["mode"], "live")
+        self.assertIn("No strong discovery found", created["report"]["discovery"])
+        self.assertEqual(created["report"]["evidence_strength"], "Weak")
+
 
 if __name__ == "__main__":
     unittest.main()
