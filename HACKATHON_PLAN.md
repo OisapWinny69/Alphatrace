@@ -196,10 +196,14 @@ The UI exposes a compact event timeline with links to the relevant source, fact,
 - Add source discovery interface, safe HTTP fetcher, local cache, HTML parsing, page-preserving PDF boundary, and exact quote verification.
 - Return partial coverage explicitly when a source fails.
 
+**Status:** Implemented with standard-library HTTP/HTML handling and a Docker-provided `pdftotext` page boundary. Failed or unavailable documents remain warnings and cannot become evidence.
+
 ### Step 5 — General live research pack
 
 - Implement configurable bank/NBFC metric extraction and peer comparison.
 - Never map a company to a prewritten result; facts and sources drive the outcome.
+
+**Status:** The first conservative live coordinator is implemented for verified GNPA/write-off-rate stock-versus-flow comparisons, with heuristic extraction, optional structured AI extraction, deterministic calculations, and a no-strong-discovery fallback. Broader metric packs and cold unseen-company validation remain next.
 
 ### Step 6 — Challenge and dashboard
 

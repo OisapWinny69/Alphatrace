@@ -45,7 +45,7 @@ Copy `.env.example` to `.env` for local configuration. The current offline verti
 
 Keys must never be put into browser code, source control, or logs.
 
-Live-source boundaries are implemented with the standard library in
+Live-source boundaries and the conservative live coordinator are implemented with the standard library in
 `alpha_trace/sources.py`: candidate search results are separated from fetched
 documents, public URLs are validated, documents are cached outside `static/`,
 HTML is parsed into visible text, and quotes are marked `verified`,
@@ -100,8 +100,8 @@ Open <http://127.0.0.1:8000> after the container starts.
 
 ## Current boundary and roadmap
 
-Implemented: public URL validation, bounded HTML retrieval, local document caching, candidate search adapter, exact quote verification, SQLite run persistence, indexed evidence/claim/conflict readback, and replayable research events.
+Implemented: public URL validation, bounded HTML/PDF retrieval, local document caching, candidate search adapter, exact quote verification, deterministic live stock-versus-flow calculations, optional structured AI extraction/hypotheses, SQLite run persistence, indexed evidence/claim/conflict readback, and replayable research events.
 
-Next: connect fetched public documents to a page-preserving PDF parser and generic metric extraction/structured reasoning provider, then run cold live research on unseen companies. Until that integration is enabled, the browser uses clearly labelled offline fixture mode and never presents synthetic fixture values as live evidence.
+Next: expand metric coverage beyond the first asset-quality pack, improve source ranking and peer retrieval, and run a cold live test on unseen companies with configured public-source credentials. If live coverage is incomplete, the coordinator returns a weak report rather than presenting synthetic values as live evidence.
 
 The product requirements and security boundaries are documented in `PRD.md`; the execution strategy and finals acceptance gates are in `HACKATHON_PLAN.md`.
