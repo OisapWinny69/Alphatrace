@@ -24,6 +24,30 @@ from alpha_trace.store import ResearchStore
 ROOT = Path(__file__).resolve().parent
 STATIC_DIR = ROOT / "static"
 MAX_BODY_BYTES = 64 * 1024
+
+
+def _load_env_file() -> None:
+    """Load simple KEY=VALUE settings without adding a dotenv dependency."""
+
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        return
+    try:
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key.replace("_", "").isalnum():
+            os.environ.setdefault(key, value)
+
+
+_load_env_file()
 STORE = ResearchStore()
 
 

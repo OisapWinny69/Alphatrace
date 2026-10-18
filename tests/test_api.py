@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import threading
 import unittest
@@ -55,6 +56,21 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(created["report"]["mode"], "live")
         self.assertIn("No strong discovery found", created["report"]["discovery"])
         self.assertEqual(created["report"]["evidence_strength"], "Weak")
+
+    def test_env_loader_reads_settings_without_overwriting_process_values(self):
+        original_root = app.ROOT
+        with tempfile.TemporaryDirectory() as directory:
+            env_path = Path(directory) / ".env"
+            env_path.write_text("ALPHATRACE_TEST_MODE=live\n# ignored\n", encoding="utf-8")
+            app.ROOT = Path(directory)
+            os.environ.pop("ALPHATRACE_TEST_MODE", None)
+            app._load_env_file()
+            self.assertEqual(os.environ.get("ALPHATRACE_TEST_MODE"), "live")
+            os.environ["ALPHATRACE_TEST_MODE"] = "process"
+            app._load_env_file()
+            self.assertEqual(os.environ.get("ALPHATRACE_TEST_MODE"), "process")
+            os.environ.pop("ALPHATRACE_TEST_MODE", None)
+        app.ROOT = original_root
 
 
 if __name__ == "__main__":
