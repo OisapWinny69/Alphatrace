@@ -9,6 +9,18 @@ from typing import Any, Literal
 EvidenceRole = Literal["supporting", "opposing", "context"]
 EvidenceStrength = Literal["Strong", "Moderate", "Weak"]
 TestStatus = Literal["PASS", "FAIL", "INCONCLUSIVE"]
+VerificationStatus = Literal["verified", "normalized_match", "unverified", "failed"]
+ClaimType = Literal[
+    "discovery",
+    "why_it_matters",
+    "counterargument",
+    "falsification_condition",
+    "context",
+]
+ClaimStatus = Literal["validated", "downgraded", "rejected"]
+ConflictSeverity = Literal["low", "material", "critical"]
+ConflictStatus = Literal["open", "explained", "resolved"]
+EventStatus = Literal["complete", "warning", "failed"]
 
 
 @dataclass(frozen=True)
@@ -34,6 +46,9 @@ class SourceDocument:
     reporting_period: str
     source_tier: int
     fixture: bool = True
+    canonical_url: str = ""
+    retrieval_status: Literal["retrieved", "cached", "failed", "fixture"] = "fixture"
+    content_hash: str = ""
 
 
 @dataclass(frozen=True)
@@ -49,6 +64,10 @@ class Fact:
     exact_quote: str
     publisher_family: str
     source_tier: int
+    source_url: str = ""
+    segment: str = ""
+    scope: str = "unknown"
+    quote_verification: VerificationStatus = "verified"
 
 
 @dataclass(frozen=True)
@@ -76,6 +95,37 @@ class EvidenceItem:
     quote: str
     role: EvidenceRole
     publisher_family: str
+    verification_status: VerificationStatus = "verified"
+    claim_ids: tuple[str, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class Claim:
+    id: str
+    text: str
+    claim_type: ClaimType
+    evidence_ids: tuple[str, ...]
+    calculation_ids: tuple[str, ...] = field(default_factory=tuple)
+    independent_source_families: int = 0
+    confidence: float = 0.0
+    status: ClaimStatus = "validated"
+
+
+@dataclass(frozen=True)
+class Conflict:
+    id: str
+    conflict_type: str
+    source_a_id: str
+    source_b_id: str
+    claim_a: str
+    claim_b: str
+    metric_or_topic: str
+    period: str
+    severity: ConflictSeverity
+    possible_explanation: str
+    resolution_status: ConflictStatus
+    evidence_ids: tuple[str, ...] = field(default_factory=tuple)
+    calculation_ids: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -109,6 +159,21 @@ class TimelineEvent:
 
 
 @dataclass(frozen=True)
+class ResearchEvent:
+    sequence: int
+    stage: str
+    action: str
+    summary: str
+    status: EventStatus = "complete"
+    source_ids: tuple[str, ...] = field(default_factory=tuple)
+    fact_ids: tuple[str, ...] = field(default_factory=tuple)
+    calculation_ids: tuple[str, ...] = field(default_factory=tuple)
+    hypothesis_ids: tuple[str, ...] = field(default_factory=tuple)
+    evidence_ids: tuple[str, ...] = field(default_factory=tuple)
+    conflict_ids: tuple[str, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
 class DiscoveryReport:
     run_id: str
     mode: str
@@ -127,6 +192,9 @@ class DiscoveryReport:
     metrics: dict[str, Any]
     stages: tuple[str, ...]
     notice: str
+    claims: tuple[Claim, ...] = field(default_factory=tuple)
+    conflicts: tuple[Conflict, ...] = field(default_factory=tuple)
+    events: tuple[ResearchEvent, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

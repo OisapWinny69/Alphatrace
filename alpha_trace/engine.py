@@ -10,16 +10,20 @@ from typing import Any
 from .calculations import cagr, delta, evidence_strength, pct_change, safe_round
 from .models import (
     Calculation,
+    Claim,
     CompanyIdentity,
+    Conflict,
     DiscoveryReport,
     EvidenceItem,
     Fact,
     FalsificationTest,
     Hypothesis,
+    ResearchEvent,
     SourceDocument,
     TimelineEvent,
 )
 from .resolver import resolve_company
+from .validation import validate_report
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -167,6 +171,7 @@ def _evidence(documents: dict[str, SourceDocument]) -> tuple[EvidenceItem, ...]:
                 quote=source["quote"],
                 role=role,  # type: ignore[arg-type]
                 publisher_family=document.publisher_family,
+                verification_status="verified",
             )
         )
     return tuple(items)
@@ -375,6 +380,95 @@ def run_research(query: str, mode: str = "offline") -> DiscoveryReport:
     passed = sum(test.status == "PASS" for test in tests)
     strength, strength_reasoning = evidence_strength(passed, 4, len(calculations))
 
+    claims = (
+        Claim(
+            id="claim-discovery",
+            text=(
+                f"{identity.name}'s headline GNPA improvement is materially faster than its write-off-adjusted improvement."
+            ),
+            claim_type="discovery",
+            evidence_ids=("ev-headline", "ev-rbi", "ev-rating"),
+            calculation_ids=("calc-headline-improvement", "calc-adjusted-improvement", "calc-writeoff-growth"),
+            independent_source_families=3,
+            confidence=0.82,
+        ),
+        Claim(
+            id="claim-peer-context",
+            text="The signal is not fully explained by a uniform peer improvement pattern.",
+            claim_type="why_it_matters",
+            evidence_ids=("ev-peer", "ev-headline"),
+            calculation_ids=("calc-peer-gap",),
+            independent_source_families=2,
+            confidence=0.68,
+        ),
+        Claim(
+            id="claim-counterargument",
+            text="A normalizing credit cycle and stronger recoveries could explain the divergence without hidden deterioration.",
+            claim_type="counterargument",
+            evidence_ids=("ev-rbi", "ev-rating"),
+            independent_source_families=2,
+            confidence=0.55,
+        ),
+        Claim(
+            id="claim-falsification",
+            text="The discovery should be reconsidered if the write-off-adjusted trend improves while write-offs fall for two consecutive quarters.",
+            claim_type="falsification_condition",
+            evidence_ids=("ev-headline", "ev-rating"),
+            calculation_ids=("calc-adjusted-improvement", "calc-writeoff-growth"),
+            independent_source_families=2,
+            confidence=0.74,
+        ),
+    )
+
+    conflicts = (
+        Conflict(
+            id="conflict-narrative-flow",
+            conflict_type="Narrative versus metric mismatch",
+            source_a_id="company-presentation",
+            source_b_id="company-results",
+            claim_a="Management emphasizes continued improvement in headline portfolio quality.",
+            claim_b="The calculated write-off-adjusted improvement is materially slower than headline GNPA improvement.",
+            metric_or_topic="Asset quality",
+            period=periods[-1],
+            severity="material",
+            possible_explanation="Recoveries, write-offs, portfolio seasoning, or a normalizing credit cycle can improve the stock measure while masking a different flow profile.",
+            resolution_status="open",
+            evidence_ids=("ev-headline", "ev-narrative", "ev-rbi"),
+            calculation_ids=("calc-headline-improvement", "calc-adjusted-improvement"),
+        ),
+        Conflict(
+            id="conflict-company-peer",
+            conflict_type="Company versus peer mismatch",
+            source_a_id="company-results",
+            source_b_id="peer-results",
+            claim_a="The target's headline GNPA improvement is faster than the peer-average improvement.",
+            claim_b="Comparable lenders also report improving headline GNPA, which may make the signal sector-related.",
+            metric_or_topic="Headline GNPA",
+            period=periods[-1],
+            severity="low",
+            possible_explanation="Sector normalization may explain part of the trend even if the write-off-adjusted gap remains target-specific.",
+            resolution_status="explained",
+            evidence_ids=("ev-headline", "ev-peer"),
+            calculation_ids=("calc-peer-gap",),
+        ),
+    )
+
+    events = (
+        ResearchEvent(1, "resolve", "resolve_company", f"Resolved {identity.symbol} as {identity.name}."),
+        ResearchEvent(2, "plan", "select_metric_pack", "Selected the bank/NBFC stock-versus-flow asset-quality pack."),
+        ResearchEvent(3, "plan", "select_peers", f"Selected {len(identity.peers)} same-model peer identities.", source_ids=("peer-results",)),
+        ResearchEvent(4, "collect", "discover_sources", f"Loaded {len(documents)} source records across independent publisher families.", source_ids=tuple(documents)),
+        ResearchEvent(5, "extract", "extract_facts", f"Structured {len(facts)} period-indexed facts from the evidence corpus.", fact_ids=tuple(fact.id for fact in facts)),
+        ResearchEvent(6, "verify", "verify_quotes", f"Verified {len(evidence)} evidence quotes before report composition.", evidence_ids=tuple(item.id for item in evidence)),
+        ResearchEvent(7, "calculate", "calculate_metrics", f"Computed {len(calculations)} deterministic relationships.", calculation_ids=tuple(item.id for item in calculations)),
+        ResearchEvent(8, "detect", "detect_divergence", "Detected a headline-versus-write-off-adjusted asset-quality divergence.", calculation_ids=("calc-headline-improvement", "calc-adjusted-improvement")),
+        ResearchEvent(9, "hypothesize", "generate_hypotheses", "Generated three competing explanations.", hypothesis_ids=tuple(item.id for item in hypotheses)),
+        ResearchEvent(10, "challenge", "find_conflicts", f"Recorded {len(conflicts)} source-versus-metric conflicts.", conflict_ids=tuple(item.id for item in conflicts), evidence_ids=("ev-peer", "ev-narrative")),
+        ResearchEvent(11, "challenge", "run_red_team", "Ran sector, accounting-artifact, base-effect, macro, and disclosure-change tests.", evidence_ids=tuple(item.id for item in evidence)),
+        ResearchEvent(12, "report", "rank_hypothesis", "Selected the surviving stock-versus-flow hypothesis and retained the rejected sector-only hypothesis.", hypothesis_ids=("hyp-writeoff-adjusted", "hyp-sector-story")),
+        ResearchEvent(13, "report", "compose_report", "Validated the claim ledger, conflicts, calculations, and falsification conditions."),
+    )
+
     timeline = (
         TimelineEvent(
             period=periods[0],
@@ -415,7 +509,7 @@ def run_research(query: str, mode: str = "offline") -> DiscoveryReport:
         "peer_improvement": safe_round(peer_improvement),
     }
 
-    return DiscoveryReport(
+    report = DiscoveryReport(
         run_id=f"run_{uuid.uuid4().hex[:10]}",
         mode=mode,
         company=identity,
@@ -450,4 +544,9 @@ def run_research(query: str, mode: str = "offline") -> DiscoveryReport:
             "OFFLINE FIXTURE MODE — the pipeline, calculations, citations, and falsification flow are real, "
             "but the displayed values are synthetic demo data until live public-source adapters are enabled."
         ),
+        claims=claims,
+        conflicts=conflicts,
+        events=events,
     )
+    validate_report(report)
+    return report

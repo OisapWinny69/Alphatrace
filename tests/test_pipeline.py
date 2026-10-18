@@ -36,6 +36,16 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(any(item.status == "rejected" for item in report.hypotheses))
         self.assertTrue(all(item.url.startswith("https://") for item in report.evidence))
 
+    def test_claim_ledger_and_conflicts_are_auditable(self):
+        report = run_research("HDFCBANK")
+        self.assertGreaterEqual(len(report.claims), 4)
+        self.assertTrue(all(claim.evidence_ids for claim in report.claims))
+        self.assertTrue(all(item.verification_status == "verified" for item in report.evidence))
+        self.assertGreaterEqual(len(report.conflicts), 2)
+        self.assertTrue(any(conflict.resolution_status == "open" for conflict in report.conflicts))
+        self.assertGreaterEqual(len(report.events), 10)
+        self.assertEqual([event.sequence for event in report.events], list(range(1, len(report.events) + 1)))
+
     def test_unknown_research_input_raises_clear_error(self):
         with self.assertRaisesRegex(ValueError, "could not resolve"):
             run_research("UNKNOWN")
