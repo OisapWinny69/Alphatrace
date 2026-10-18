@@ -92,6 +92,27 @@ function renderEvidence(evidence) {
     </a>`).join("");
 }
 
+function renderClaims(claims, evidence) {
+  const evidenceById = Object.fromEntries(evidence.map((item) => [item.id, item]));
+  return claims.map((claim) => {
+    const linkedEvidence = claim.evidence_ids.map((id) => {
+      const item = evidenceById[id];
+      if (!item) return `<span class="claim-ref">${escapeHtml(id)}</span>`;
+      return `<a class="claim-ref" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(id)} ↗</a>`;
+    }).join(" ");
+    const confidence = Number(claim.confidence);
+    return `<div class="claim-item"><div class="claim-meta"><span class="claim-type">${escapeHtml(claim.claim_type.replaceAll("_", " "))}</span><span>${Number.isFinite(confidence) ? `${Math.round(confidence * 100)}% confidence` : "confidence unavailable"}</span><span>${escapeHtml(claim.independent_source_families)} independent families</span></div><strong>${escapeHtml(claim.text)}</strong><div class="claim-links">Evidence: ${linkedEvidence || "none"}${claim.calculation_ids.length ? `<span> · Calculations: ${escapeHtml(claim.calculation_ids.join(", "))}</span>` : ""}</div></div>`;
+  }).join("");
+}
+
+function renderConflicts(conflicts) {
+  return conflicts.map((conflict) => `<div class="conflict-item"><div class="conflict-head"><span class="conflict-severity ${escapeHtml(conflict.severity)}">${escapeHtml(conflict.severity)}</span><strong>${escapeHtml(conflict.conflict_type)}</strong><span class="conflict-status">${escapeHtml(conflict.resolution_status)}</span></div><div class="conflict-grid"><div><small>Source A / claim</small><p>${escapeHtml(conflict.claim_a)}</p></div><div><small>Source B / claim</small><p>${escapeHtml(conflict.claim_b)}</p></div></div><p class="conflict-explanation"><b>Possible explanation:</b> ${escapeHtml(conflict.possible_explanation)}</p></div>`).join("");
+}
+
+function renderResearchTrail(events) {
+  return events.map((event) => `<details class="trail-item"><summary><span class="trail-sequence">${String(event.sequence).padStart(2, "0")}</span><span><b>${escapeHtml(event.action.replaceAll("_", " "))}</b><small>${escapeHtml(event.stage)} · ${escapeHtml(event.status)}</small></span></summary><p>${escapeHtml(event.summary)}</p><div class="trail-links">${event.source_ids?.length ? `Sources: ${escapeHtml(event.source_ids.join(", "))}` : ""}${event.evidence_ids?.length ? ` · Evidence: ${escapeHtml(event.evidence_ids.join(", "))}` : ""}${event.calculation_ids?.length ? ` · Calculations: ${escapeHtml(event.calculation_ids.join(", "))}` : ""}${event.conflict_ids?.length ? ` · Conflicts: ${escapeHtml(event.conflict_ids.join(", "))}` : ""}</div></details>`).join("");
+}
+
 function renderReport(report) {
   const company = report.company;
   const metrics = report.metrics;
@@ -111,12 +132,15 @@ function renderReport(report) {
       <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${calculationTiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>Reported GNPA</span><span>Write-off adjusted</span><span>Peer average</span></div></article>
       <article class="report-card full"><div class="report-label">Timeline</div><div class="timeline">${report.timeline.map((event) => `<div class="timeline-item ${event.tone === "challenge" ? "challenge" : ""}"><small>${escapeHtml(event.period)}</small><strong>${escapeHtml(event.label)}</strong><p>${escapeHtml(event.detail)}</p></div>`).join("")}</div></article>
-      <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
-      <div class="two-col full"><article class="report-card"><div class="report-label">Counterargument</div><div class="quote-block">${escapeHtml(report.counterargument)}</div></article><article class="report-card"><div class="report-label">Falsification condition</div><div class="falsify-box">${escapeHtml(report.falsification_condition)}</div></article></div>
+       <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
+       <article class="report-card full"><div class="report-label">Claims ledger · every major conclusion has linked evidence</div><div class="claims-list">${renderClaims(report.claims || [], report.evidence)}</div></article>
+       <article class="report-card full"><div class="report-label">Conflicts · what disagrees with the leading story</div><div class="conflicts-list">${renderConflicts(report.conflicts || [])}</div></article>
+       <div class="two-col full"><article class="report-card"><div class="report-label">Counterargument</div><div class="quote-block">${escapeHtml(report.counterargument)}</div></article><article class="report-card"><div class="report-label">Falsification condition</div><div class="falsify-box">${escapeHtml(report.falsification_condition)}</div></article></div>
       <article class="report-card full"><div class="report-label">Falsification tests</div><div class="test-list">${report.falsification_tests.map((test) => `<div class="test-item"><span class="test-status ${test.status.toLowerCase()}">${escapeHtml(test.status)}</span><span class="test-body"><strong>${escapeHtml(test.name)}</strong><p>${escapeHtml(test.explanation)}</p></span></div>`).join("")}</div></article>
       <article class="report-card full"><div class="report-label">Hypothesis board</div><div class="hypothesis-list">${report.hypotheses.map((hypothesis, index) => `<div class="hypothesis-item"><span class="hypothesis-rank">0${index + 1}</span><span class="hypothesis-body"><strong>${escapeHtml(hypothesis.statement)}</strong><small>${escapeHtml(hypothesis.lens)} · score ${escapeHtml(hypothesis.score)}</small></span><span class="hypothesis-state ${hypothesis.status}">${escapeHtml(hypothesis.status)}</span></div>`).join("")}</div></article>
-      <article class="report-card full"><div class="report-label">Reproducible calculations</div><div class="evidence-list">${report.numbers.map((number) => `<div class="evidence-item"><span class="evidence-tier">fx</span><span class="evidence-body"><strong>${escapeHtml(number.name)} · ${formatNumber(number.result)} ${escapeHtml(number.unit)}</strong><small>${escapeHtml(number.formula)}</small><p>${escapeHtml(number.interpretation)}</p></span></div>`).join("")}</div></article>
-    </div>`;
+       <article class="report-card full"><div class="report-label">Reproducible calculations</div><div class="evidence-list">${report.numbers.map((number) => `<div class="evidence-item"><span class="evidence-tier">fx</span><span class="evidence-body"><strong>${escapeHtml(number.name)} · ${formatNumber(number.result)} ${escapeHtml(number.unit)}</strong><small>${escapeHtml(number.formula)}</small><p>${escapeHtml(number.interpretation)}</p></span></div>`).join("")}</div></article>
+       <article class="report-card full"><div class="report-label">Research trail · replayable decision log</div><div class="trail-list">${renderResearchTrail(report.events || [])}</div></article>
+     </div>`;
 }
 
 async function runInvestigation(query) {
