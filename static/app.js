@@ -12,6 +12,14 @@ const progressFill = document.querySelector("#progress-fill");
 const stageList = document.querySelector("#stage-list");
 const reportPanel = document.querySelector("#report");
 const newResearch = document.querySelector("#new-research");
+let researchMode = "offline";
+
+fetch("/api/health")
+  .then((response) => response.json())
+  .then((payload) => {
+    if (payload.mode === "live") researchMode = "live";
+  })
+  .catch(() => {});
 
 const stages = [
   "Resolve company identity",
@@ -161,7 +169,7 @@ async function runInvestigation(query) {
   }, 250);
 
   try {
-    const response = await fetch("/api/research", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query, mode: "offline" }) });
+     const response = await fetch("/api/research", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query, mode: researchMode }) });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "The research run could not start.");
     window.clearInterval(timer);

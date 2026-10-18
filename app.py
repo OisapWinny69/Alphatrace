@@ -15,6 +15,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from alpha_trace.engine import run_research
+from alpha_trace.live_engine import run_live_research
+from alpha_trace.providers import OpenAICompatibleProvider
 from alpha_trace.resolver import resolve_company, supported_companies
 from alpha_trace.store import ResearchStore
 
@@ -152,7 +154,13 @@ class AlphaTraceHandler(BaseHTTPRequestHandler):
             if mode not in {"offline", "live"}:
                 mode = "offline"
             try:
-                report = run_research(query, str(mode))
+                if mode == "live":
+                    ai_provider = None
+                    if os.getenv("OPENAI_API_KEY") and os.getenv("AI_MODEL"):
+                        ai_provider = OpenAICompatibleProvider()
+                    report = run_live_research(query, str(mode), ai_provider=ai_provider)
+                else:
+                    report = run_research(query, str(mode))
             except ValueError as error:
                 self._send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
                 return

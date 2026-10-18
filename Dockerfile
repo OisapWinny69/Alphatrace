@@ -9,6 +9,10 @@ WORKDIR /app
 
 COPY . .
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN python -m compileall -q app.py alpha_trace tests
 
 EXPOSE 8000

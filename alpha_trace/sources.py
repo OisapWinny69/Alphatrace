@@ -12,7 +12,8 @@ import ipaddress
 import json
 import os
 import re
-import time
+import shutil
+import subprocess
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -60,6 +61,7 @@ class ParsedDocument:
     content_hash: str
     content_type: str
     page_count: int | None = None
+    pages: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -223,11 +225,34 @@ class _VisibleTextParser(HTMLParser):
 
 
 def parse_document(document: RetrievedDocument) -> ParsedDocument:
-    """Parse HTML now; reject PDFs explicitly until a page-preserving PDF adapter is configured."""
+    """Parse HTML or a PDF when the Docker-provided ``pdftotext`` is available."""
 
     content_type = document.content_type
     if "pdf" in content_type or document.final_url.lower().split("?", 1)[0].endswith(".pdf"):
-        raise SourceError("PDF parsing requires a page-preserving parser adapter")
+        executable = shutil.which("pdftotext")
+        if not executable:
+            raise SourceError("PDF parser is unavailable; install poppler-utils or configure a parser adapter")
+        try:
+            result = subprocess.run(
+                [executable, "-layout", "-", "-"],
+                input=document.body,
+                capture_output=True,
+                check=True,
+                timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise SourceError(f"PDF parsing failed: {error}") from error
+        text = result.stdout.decode("utf-8", errors="replace")
+        pages = tuple(page.strip() for page in text.split("\f") if page.strip())
+        return ParsedDocument(
+            url=document.final_url,
+            title=document.final_url,
+            text="\n\n".join(pages),
+            content_hash=document.content_hash,
+            content_type=content_type,
+            page_count=len(pages),
+            pages=pages,
+        )
     if "html" not in content_type and "text" not in content_type and not document.body.lstrip().startswith(b"<"):
         raise SourceError("Unsupported source document type")
     parser = _VisibleTextParser()
@@ -242,6 +267,8 @@ def parse_document(document: RetrievedDocument) -> ParsedDocument:
         text="\n".join(parser.parts),
         content_hash=document.content_hash,
         content_type=content_type,
+        page_count=1,
+        pages=("\n".join(parser.parts),),
     )
 
 

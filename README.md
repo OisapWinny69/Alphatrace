@@ -23,7 +23,7 @@ python app.py
 
 Then open <http://127.0.0.1:8000>.
 
-The app starts in offline mode by default. Enter a supported symbol such as `HDFCBANK`, `BAJFINANCE`, or `SHRIRAMFIN` and start an investigation.
+The app starts in offline mode by default. Enter a supported symbol such as `HDFCBANK`, `BAJFINANCE`, or `SHRIRAMFIN` and start an investigation. Set `ALPHATRACE_MODE=live` to let the browser request the live public-source coordinator; configure search/API keys first, and expect a weak report when verified coverage is insufficient.
 
 ## Run the tests
 

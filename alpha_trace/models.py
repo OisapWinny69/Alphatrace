@@ -69,6 +69,7 @@ class Fact:
     segment: str = ""
     scope: str = "unknown"
     quote_verification: VerificationStatus = "verified"
+    reported_at: str = ""
 
 
 @dataclass(frozen=True)
