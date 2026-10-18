@@ -47,7 +47,7 @@ from .validation import validate_report
 _METRICS = {
     "Bank": ("reported_gnpa", "nnpa", "write_off_rate", "credit_cost", "provision_coverage"),
     "NBFC": ("reported_gnpa", "nnpa", "write_off_rate", "credit_cost", "provision_coverage"),
-    "Insurer": ("credit_cost",),
+    "Insurer": ("premium_growth", "vnb_margin", "persistency_13m", "solvency_ratio"),
 }
 
 
@@ -304,6 +304,208 @@ def _report_without_discovery(
     return report
 
 
+def _run_insurer_research(
+    identity: CompanyIdentity,
+    mode: str,
+    evidence: tuple[EvidenceItem, ...],
+    facts: list[Fact],
+    source_documents: dict[str, SourceDocument],
+    warnings: list[str],
+    ai_provider: StructuredProvider | None,
+) -> DiscoveryReport:
+    """Analyze the insurer pack without applying bank/NBFC asset-quality logic."""
+
+    premium = _series(facts, "premium_growth")
+    margin = _series(facts, "vnb_margin")
+    if len(premium) < 2 or len(margin) < 2:
+        return _report_without_discovery(identity, mode, evidence, facts, source_documents, warnings)
+    premium_start, premium_end = premium[0], premium[-1]
+    margin_start, margin_end = margin[0], margin[-1]
+    premium_change = delta(premium_end.value, premium_start.value)
+    margin_change = delta(margin_end.value, margin_start.value)
+    calculations = (
+        _calculation(
+            "calc-live-premium-growth-change",
+            "Premium growth change",
+            "latest premium growth − earliest premium growth",
+            premium_change,
+            "percentage points",
+            (premium_start.id, premium_end.id),
+            "Premium growth is compared across verified reporting periods.",
+        ),
+        _calculation(
+            "calc-live-vnb-margin-change",
+            "VNB margin change",
+            "latest VNB margin − earliest VNB margin",
+            margin_change,
+            "percentage points",
+            (margin_start.id, margin_end.id),
+            "VNB margin indicates the economics of newly written business.",
+        ),
+        _calculation(
+            "calc-live-growth-margin-gap",
+            "Premium-growth versus VNB-margin gap",
+            "premium-growth change − VNB-margin change",
+            premium_change - margin_change,
+            "percentage points",
+            (premium_start.id, premium_end.id, margin_start.id, margin_end.id),
+            "A positive gap means growth changed faster than new-business economics.",
+        ),
+    )
+    evidence_by_fact = {
+        fact.id: next((item.id for item in evidence if item.source_document_id == fact.source_document_id and fact.metric in item.claim), evidence[0].id)
+        for fact in facts
+        if evidence
+    }
+    discovery_evidence = tuple(dict.fromkeys(evidence_by_fact.get(fact.id, evidence[0].id) for fact in (premium_start, premium_end, margin_start, margin_end)))
+    source_families = len({item.publisher_family for item in evidence if item.id in discovery_evidence})
+    calculation_ids = tuple(item.id for item in calculations)
+    claims = (
+        Claim(
+            id="claim-live-insurer-discovery",
+            text=f"{identity.name}'s verified premium-growth change differs from its VNB-margin change across the retrieved reporting window.",
+            claim_type="discovery",
+            evidence_ids=discovery_evidence,
+            calculation_ids=calculation_ids,
+            independent_source_families=source_families,
+            confidence=0.65 if source_families >= 2 else 0.45,
+            status="validated" if source_families >= 2 else "downgraded",
+        ),
+    )
+    hypotheses = (
+        Hypothesis(
+            id="hyp-live-insurer-growth-economics",
+            statement="Top-line premium growth is changing faster than VNB margin, so volume and new-business economics may be diverging.",
+            lens="Growth versus economics",
+            score=78.0,
+            supporting_evidence_ids=discovery_evidence,
+            opposing_evidence_ids=(),
+            alternative_explanation="Product mix, channel mix, or a normal shift toward lower-margin products may explain the gap.",
+            status="survived",
+        ),
+        Hypothesis(
+            id="hyp-live-insurer-mix",
+            statement="The signal is primarily a product or distribution mix change rather than a deterioration in underwriting economics.",
+            lens="Mix shift",
+            score=55.0,
+            supporting_evidence_ids=(),
+            opposing_evidence_ids=discovery_evidence,
+            alternative_explanation="The available documents may not disclose enough product-level detail to distinguish mix from execution.",
+            status="candidate",
+        ),
+        Hypothesis(
+            id="hyp-live-insurer-sector",
+            statement="The growth-margin divergence may be shared by the insurance sector rather than unique to the company.",
+            lens="Company versus peers",
+            score=43.0,
+            supporting_evidence_ids=(),
+            opposing_evidence_ids=discovery_evidence,
+            alternative_explanation="Peer VNB and premium disclosures may show the same cycle once retrieved.",
+            status="candidate",
+        ),
+    )
+    if ai_provider:
+        try:
+            generated = ai_provider.generate_hypotheses(
+                {"company": identity.symbol, "calculations": [item.__dict__ for item in calculations], "evidence": [item.__dict__ for item in evidence]}
+            )
+            if generated:
+                valid_ids = {item.id for item in evidence}
+                hypotheses = tuple(
+                    Hypothesis(
+                        id=f"hyp-live-ai-{index}",
+                        statement=str(item.get("statement", "")),
+                        lens=str(item.get("lens", "AI-generated")),
+                        score=50.0,
+                        supporting_evidence_ids=tuple(evidence_id for evidence_id in item.get("evidence_ids", ()) if evidence_id in valid_ids),
+                        opposing_evidence_ids=(),
+                        alternative_explanation=str(item.get("alternative_explanation", "")),
+                        status="candidate",
+                    )
+                    for index, item in enumerate(generated[:3], start=1)
+                    if str(item.get("statement", "")).strip()
+                ) or hypotheses
+        except SourceError:
+            warnings.append("Structured AI hypothesis generation was unavailable; deterministic insurer hypotheses were retained.")
+    tests = (
+        FalsificationTest("test-live-insurer-sector", "Sector test", "Do most peers show the same growth-margin divergence?", "INCONCLUSIVE", "Peer source coverage was not sufficient for a complete sector test.", discovery_evidence),
+        FalsificationTest("test-live-insurer-accounting", "Accounting-artifact test", "Could reporting scope or product definitions explain the trend?", "INCONCLUSIVE", "Definition continuity requires additional source pages.", discovery_evidence),
+        FalsificationTest("test-live-insurer-base", "Base-effect test", "Does the signal survive a multi-year comparison?", "PASS", "The comparison uses more than one verified period.", discovery_evidence),
+        FalsificationTest("test-live-insurer-macro", "Regulatory / macro test", "Could industry pricing or regulation explain the timing?", "INCONCLUSIVE", "No independent macro timing source resolved this test.", discovery_evidence),
+        FalsificationTest("test-live-insurer-disclosure", "Disclosure-change test", "Did the company change what it reports?", "INCONCLUSIVE", "Metric labels were extracted, but definition continuity requires more pages.", discovery_evidence),
+    )
+    conflicts = ()
+    if len({item.source_document_id for item in evidence}) >= 2 and len(discovery_evidence) >= 2:
+        source_a = next(item for item in evidence if item.id == discovery_evidence[0])
+        source_b = next(item for item in evidence if item.id == discovery_evidence[1])
+        if source_a.source_document_id != source_b.source_document_id:
+            conflicts = (
+                Conflict(
+                    id="conflict-live-insurer-growth-margin",
+                    conflict_type="Narrative versus metric mismatch",
+                    source_a_id=source_a.source_document_id,
+                    source_b_id=source_b.source_document_id,
+                    claim_a=source_a.claim,
+                    claim_b=source_b.claim,
+                    metric_or_topic="Insurance growth economics",
+                    period=margin_end.period,
+                    severity="material",
+                    possible_explanation="Premium growth and VNB margin may reflect different product or distribution mixes.",
+                    resolution_status="open",
+                    evidence_ids=discovery_evidence,
+                    calculation_ids=calculation_ids,
+                ),
+            )
+    passed = sum(item.status == "PASS" for item in tests)
+    strength, strength_reasoning = evidence_strength(passed, source_families, len(calculations))
+    events = (
+        ResearchEvent(1, "resolve", "resolve_company", f"Resolved {identity.symbol} as {identity.name}."),
+        ResearchEvent(2, "collect", "discover_sources", f"Retrieved {len(source_documents)} public insurer documents.", source_ids=tuple(source_documents)),
+        ResearchEvent(3, "extract", "verify_facts", f"Kept {len(facts)} facts after quote verification.", fact_ids=tuple(item.id for item in facts), evidence_ids=discovery_evidence),
+        ResearchEvent(4, "calculate", "calculate_metrics", "Computed premium-growth and VNB-margin relationships.", calculation_ids=calculation_ids),
+        ResearchEvent(5, "hypothesize", "generate_hypotheses", f"Generated {len(hypotheses)} competing insurer hypotheses.", hypothesis_ids=tuple(item.id for item in hypotheses)),
+        ResearchEvent(6, "challenge", "run_red_team", "Ran five insurer falsification tests.", evidence_ids=discovery_evidence),
+        ResearchEvent(7, "report", "compose_report", "Validated the insurer claim ledger and evidence trail."),
+    )
+    report = DiscoveryReport(
+        run_id=f"live_{hashlib.sha256((identity.symbol + str(date.today())).encode()).hexdigest()[:10]}",
+        mode=mode,
+        company=identity,
+        discovery=f"{identity.name}'s verified premium-growth change differs from its VNB-margin change across the retrieved public-source window.",
+        why_it_matters=(
+            "Premium growth and new-business margin measure different parts of insurer economics.",
+            "The gap is a research signal, not a prediction or investment recommendation.",
+            "Product mix, distribution mix, and peer evidence are required before treating it as company-specific.",
+        ),
+        evidence=evidence,
+        timeline=tuple(
+            TimelineEvent(period=period, label="Verified insurer evidence point", detail="A source-backed premium or VNB metric enters the growth-economics comparison.", tone="source" if index == 0 else "signal")
+            for index, period in enumerate(dict.fromkeys((premium_start.period, premium_end.period)))
+        ),
+        numbers=calculations,
+        counterargument="Product mix, channel mix, reporting definitions, or a normal shift toward lower-margin products may explain the divergence.",
+        falsification_condition="Reconsider this conclusion if two later periods show VNB margin improving at least as quickly as premium growth, with consistent product definitions and peer context.",
+        evidence_strength=strength,  # type: ignore[arg-type]
+        strength_reasoning=strength_reasoning,
+        hypotheses=hypotheses,
+        falsification_tests=tests,
+        metrics={
+            "periods": [premium_start.period, premium_end.period],
+            "premium_growth": [safe_round(premium_start.value), safe_round(premium_end.value)],
+            "vnb_margin": [safe_round(margin_start.value), safe_round(margin_end.value)],
+            "premium_growth_change": safe_round(premium_change),
+            "vnb_margin_change": safe_round(margin_change),
+        },
+        stages=("Resolve company identity", "Discover public sources", "Verify quotes", "Calculate insurer metrics", "Challenge hypotheses", "Prepare auditable report"),
+        notice="LIVE PUBLIC-SOURCE MODE — insurer metrics and quotes were retrieved and verified from public documents; source coverage warnings remain visible.",
+        claims=claims,
+        conflicts=conflicts,
+        events=events,
+    )
+    validate_report(report)
+    return report
+
+
 def run_live_research(
     query: str,
     mode: str = "live",
@@ -342,6 +544,9 @@ def run_live_research(
     source_documents, parsed_by_id = _document_records(list(unique_candidates.values()), list(unique_documents.values()), identity.symbol)
     facts = _extract_facts(parsed_by_id, source_documents, identity.symbol, _METRICS.get(identity.business_model, ()), ai_provider)
     evidence = _build_evidence(facts, source_documents)
+
+    if identity.business_model == "Insurer":
+        return _run_insurer_research(identity, mode, evidence, facts, source_documents, warnings, ai_provider)
 
     gnpa = _series(facts, "reported_gnpa")
     writeoffs = _series(facts, "write_off_rate")

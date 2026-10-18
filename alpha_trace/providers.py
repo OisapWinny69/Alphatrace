@@ -112,6 +112,10 @@ class HeuristicFactExtractor:
                     "write_off_rate": (r"(?:write[- ]offs?|write[- ]off\s+rate)[^%\n]{0,100}?([0-9]+(?:\.[0-9]+)?)\s*%",),
                     "credit_cost": (r"(?:credit\s+cost)[^%\n]{0,100}?([0-9]+(?:\.[0-9]+)?)\s*%",),
                     "provision_coverage": (r"(?:provision\s+coverage|PCR)[^%\n]{0,100}?([0-9]+(?:\.[0-9]+)?)\s*%",),
+                    "premium_growth": (r"(?:premium|APE|new\s+business\s+premium)[^%\n]{0,100}?(?:growth|grew|up)[^%\n]{0,40}?([0-9]+(?:\.[0-9]+)?)\s*%",),
+                    "vnb_margin": (r"(?:VNB\s+margin|value\s+of\s+new\s+business\s+margin)[^%\n]{0,60}?([0-9]+(?:\.[0-9]+)?)\s*%",),
+                    "persistency_13m": (r"(?:13[- ]month|13m)[^%\n]{0,50}?persistency[^%\n]{0,50}?([0-9]+(?:\.[0-9]+)?)\s*%",),
+                    "solvency_ratio": (r"(?:solvency\s+ratio)[^%\n]{0,60}?([0-9]+(?:\.[0-9]+)?)\s*(?:x|times)?",),
                 },
             )
 

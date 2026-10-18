@@ -41,6 +41,42 @@ class FakeAI:
         return []
 
 
+class InsurerSearch(FakeSearch):
+    def search(self, query: str, max_results: int = 8):
+        return [
+            SearchResult("Insurer Q1", "https://irda.gov.in/q1.html", ""),
+            SearchResult("Insurer Q2", "https://nseindia.com/insurer-q2.html", ""),
+        ]
+
+
+class InsurerFetcher:
+    bodies = {
+        "https://irda.gov.in/q1.html": b"<html><title>Q1</title><body>Premium growth was 12.0% and VNB margin was 27.0%.</body></html>",
+        "https://nseindia.com/insurer-q2.html": b"<html><title>Q2</title><body>Premium growth was 18.0% and VNB margin was 25.0%.</body></html>",
+    }
+
+    def fetch(self, url: str):
+        body = self.bodies[url]
+        return RetrievedDocument(url, url, "text/html", 200, body, hashlib.sha256(body).hexdigest())
+
+
+class InsurerAI:
+    def extract_facts(self, document, metrics):
+        if "q1" in document.url:
+            period = "Q1 FY25"
+            values = (12.0, 27.0)
+        else:
+            period = "Q2 FY25"
+            values = (18.0, 25.0)
+        return [
+            {"metric": "premium_growth", "value": values[0], "unit": "%", "period": period, "quote": document.text, "page": 1},
+            {"metric": "vnb_margin", "value": values[1], "unit": "%", "period": period, "quote": document.text, "page": 1},
+        ]
+
+    def generate_hypotheses(self, context):
+        return []
+
+
 class LiveEngineTests(unittest.TestCase):
     def test_live_engine_uses_verified_sources_and_deterministic_calculations(self):
         report = run_live_research(
@@ -63,6 +99,18 @@ class LiveEngineTests(unittest.TestCase):
         self.assertIn("No strong discovery found", report.discovery)
         self.assertEqual(report.evidence_strength, "Weak")
         self.assertTrue(all(test.status == "INCONCLUSIVE" for test in report.falsification_tests))
+
+    def test_live_engine_uses_insurer_metric_pack(self):
+        report = run_live_research(
+            "HDFCLIFE",
+            search_provider=InsurerSearch(),
+            fetcher=InsurerFetcher(),
+            ai_provider=InsurerAI(),
+        )
+        self.assertIn("VNB-margin", report.discovery)
+        self.assertEqual(report.metrics["premium_growth_change"], 6.0)
+        self.assertEqual(report.metrics["vnb_margin_change"], -2.0)
+        self.assertTrue(any(h.lens == "Growth versus economics" for h in report.hypotheses))
 
 
 if __name__ == "__main__":
