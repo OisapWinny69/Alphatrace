@@ -669,6 +669,212 @@ def _run_insurer_research(
     return report
 
 
+def _run_gnpa_temporal_research(
+    identity: CompanyIdentity,
+    mode: str,
+    evidence: tuple[EvidenceItem, ...],
+    facts: list[Fact],
+    source_documents: dict[str, SourceDocument],
+    warnings: list[str],
+    metric: str = "reported_gnpa",
+) -> DiscoveryReport:
+    """Produce a cautious temporal report when one metric has aligned history."""
+
+    series = _series(facts, metric)
+    if len(series) < 2 or not evidence:
+        return _report_without_discovery(identity, mode, evidence, facts, source_documents, warnings)
+    metric_labels = {
+        "reported_gnpa": ("headline GNPA", "GNPA"),
+        "nnpa": ("NNPA", "NNPA"),
+        "write_off_rate": ("write-off rate", "write-off"),
+        "credit_cost": ("credit cost", "credit-cost"),
+        "provision_coverage": ("provision coverage", "provision-coverage"),
+    }
+    metric_label, metric_short_label = metric_labels.get(metric, (metric.replace("_", " "), metric.replace("_", "-")))
+    start, end = series[0], series[-1]
+    change = delta(end.value, start.value)
+    calculations = (
+        _calculation(
+            f"calc-live-{metric}-temporal-change",
+            f"{metric_label} temporal change",
+            f"latest verified {metric_label} − earliest verified {metric_label}",
+            change,
+            "percentage points",
+            (start.id, end.id),
+            "This is a descriptive time-series change; it does not establish causation or underlying credit quality.",
+        ),
+        _calculation(
+            f"calc-live-{metric}-observation-window",
+            "Observation-window length",
+            f"number of distinct verified {metric_label} periods",
+            float(len(series)),
+            "periods",
+            tuple(item.id for item in series),
+            "A longer verified window gives more context to the headline trend.",
+        ),
+    )
+    fact_evidence: dict[str, str] = {}
+    for fact in series:
+        fact_evidence[fact.id] = next(
+            (
+                item.id
+                for item in evidence
+                if item.source_document_id == fact.source_document_id
+                and item.period == fact.period
+                and metric in item.claim
+            ),
+            evidence[0].id,
+        )
+    discovery_evidence = tuple(dict.fromkeys((fact_evidence[start.id], fact_evidence[end.id])))
+    source_families = len({item.publisher_family for item in evidence if item.id in discovery_evidence})
+    calculation_ids = tuple(item.id for item in calculations)
+    direction = "increased" if change > 0 else "decreased" if change < 0 else "was unchanged"
+    claims = (
+        Claim(
+            id=f"claim-live-{metric}-temporal",
+            text=f"{identity.name}'s verified {metric_label} {direction} across the available comparable reporting window.",
+            claim_type="discovery",
+            evidence_ids=discovery_evidence,
+            calculation_ids=calculation_ids,
+            independent_source_families=source_families,
+            confidence=0.48,
+            status="downgraded",
+        ),
+        Claim(
+            id=f"claim-live-{metric}-counterargument",
+            text=f"{metric_label.title()} alone cannot distinguish portfolio mix, reporting-definition effects, or the underlying economic cause.",
+            claim_type="counterargument",
+            evidence_ids=discovery_evidence,
+            independent_source_families=source_families,
+            confidence=0.68,
+        ),
+        Claim(
+            id=f"claim-live-{metric}-falsification",
+            text="The temporal signal should be reconsidered if later verified periods reverse the direction or if a second metric contradicts it.",
+            claim_type="falsification_condition",
+            evidence_ids=discovery_evidence,
+            calculation_ids=calculation_ids,
+            independent_source_families=source_families,
+            confidence=0.62,
+        ),
+    )
+    hypotheses = (
+        Hypothesis(
+            id=f"hyp-live-{metric}-trend",
+            statement=f"The {metric_label} trend {direction} across the verified window and is worth investigating further.",
+            lens="Temporal change",
+            score=64.0,
+            supporting_evidence_ids=discovery_evidence,
+            opposing_evidence_ids=(),
+            alternative_explanation="The change may reflect recoveries, write-offs, seasoning, or mix rather than a durable underlying shift.",
+            status="survived",
+        ),
+        Hypothesis(
+            id=f"hyp-live-{metric}-underlying-quality",
+            statement=f"{metric_label.title()} by itself proves an underlying improvement in credit quality.",
+            lens="Stock versus flow",
+            score=22.0,
+            supporting_evidence_ids=discovery_evidence,
+            opposing_evidence_ids=(),
+            alternative_explanation="A second metric is required before making an underlying-quality claim.",
+            status="rejected",
+        ),
+        Hypothesis(
+            id=f"hyp-live-{metric}-sector",
+            statement=f"The {metric_label} change may be a sector-wide pattern rather than company-specific.",
+            lens="Company versus peers",
+            score=44.0,
+            supporting_evidence_ids=(),
+            opposing_evidence_ids=discovery_evidence,
+            alternative_explanation="Peer periods were not sufficiently aligned in this run.",
+            status="candidate",
+        ),
+    )
+    tests = (
+        FalsificationTest(f"test-live-{metric}-sector", "Sector test", f"Do most peers show the same {metric_label} change?", "INCONCLUSIVE", "Peer periods were not aligned with the verified company periods.", discovery_evidence),
+        FalsificationTest("test-live-gnpa-accounting", "Accounting-artifact test", "Could scope or definition drift explain the change?", "INCONCLUSIVE", "Only one metric was sufficiently aligned for this run.", discovery_evidence),
+        FalsificationTest(f"test-live-{metric}-base", "Base-effect test", "Does the signal use more than one verified period?", "PASS", f"The report uses {len(series)} distinct verified {metric_label} periods.", discovery_evidence),
+        FalsificationTest("test-live-gnpa-macro", "Regulatory / macro test", "Could a sector event explain the timing?", "INCONCLUSIVE", "No aligned independent macro series was retrieved.", discovery_evidence),
+        FalsificationTest("test-live-gnpa-disclosure", "Disclosure-change test", "Did the company change what it reports?", "INCONCLUSIVE", "A second metric or definition history is needed to resolve this.", discovery_evidence),
+    )
+    conflicts: tuple[Conflict, ...] = ()
+    if len(discovery_evidence) == 2:
+        source_a = next(item for item in evidence if item.id == discovery_evidence[0])
+        source_b = next(item for item in evidence if item.id == discovery_evidence[1])
+        if source_a.source_document_id != source_b.source_document_id:
+            conflicts = (
+                Conflict(
+                    id=f"conflict-live-{metric}-coverage",
+                    conflict_type="Temporal source coverage mismatch",
+                    source_a_id=source_a.source_document_id,
+                    source_b_id=source_b.source_document_id,
+                    claim_a=source_a.claim,
+                    claim_b=source_b.claim,
+                    metric_or_topic=metric_label,
+                    period=end.period,
+                    severity="low",
+                    possible_explanation="The two endpoints come from different public documents; a second quality metric is not aligned across both periods.",
+                    resolution_status="open",
+                    evidence_ids=discovery_evidence,
+                    calculation_ids=calculation_ids,
+                ),
+            )
+    strength, strength_reasoning = evidence_strength(1, source_families, len(calculations))
+    events = (
+        ResearchEvent(1, "resolve", "resolve_company", f"Resolved {identity.symbol} as {identity.name}."),
+        ResearchEvent(2, "collect", "discover_sources", f"Retrieved {len(source_documents)} public documents for current and historical context.", source_ids=tuple(source_documents)),
+        ResearchEvent(3, "extract", "verify_facts", f"Kept {len(facts)} facts after quote verification; {len(series)} {metric_label} periods aligned.", fact_ids=tuple(item.id for item in facts), evidence_ids=discovery_evidence),
+        ResearchEvent(4, "calculate", "calculate_metrics", f"Computed a descriptive {metric_label} time-series change without inventing a secondary metric.", calculation_ids=calculation_ids),
+        ResearchEvent(5, "hypothesize", "generate_hypotheses", "Generated three hypotheses and rejected the unsupported underlying-quality claim.", hypothesis_ids=tuple(item.id for item in hypotheses)),
+        ResearchEvent(6, "challenge", "run_red_team", "Ran five tests; secondary-metric and peer limitations remain visible.", evidence_ids=discovery_evidence),
+        ResearchEvent(7, "report", "compose_report", "Validated the downgraded temporal claim ledger and evidence trail."),
+    )
+    report = DiscoveryReport(
+        run_id=f"live_{hashlib.sha256((identity.symbol + str(date.today())).encode()).hexdigest()[:10]}",
+        mode=mode,
+        company=identity,
+        discovery=f"{identity.name}'s verified {metric_label} temporal signal: it {direction} from {safe_round(start.value)}% in {start.period} to {safe_round(end.value)}% in {end.period}; the run did not align a second metric strongly enough to claim why.",
+        why_it_matters=(
+            "A time-series change is more informative than a single current-period number.",
+            "The report combines current and historical public documents while keeping the causal conclusion deliberately narrow.",
+            f"A second metric alongside {metric_short_label} and aligned peer periods are the next evidence needed to upgrade this signal.",
+        ),
+        evidence=evidence,
+        timeline=tuple(
+            TimelineEvent(period=period, label=f"Verified {metric_label} evidence point", detail=f"A public-source {metric_label} value enters the temporal comparison.", tone="source" if index == 0 else "signal")
+            for index, period in enumerate((start.period, end.period))
+        ),
+        numbers=calculations,
+        counterargument=f"{metric_label.title()} can move because of portfolio mix, reporting definitions, and sector conditions. This run does not prove the underlying economic cause.",
+        falsification_condition=f"Reconsider the temporal signal if two later verified periods reverse the direction, or if aligned secondary and peer evidence contradicts the {metric_label} trend.",
+        evidence_strength=strength,  # type: ignore[arg-type]
+        strength_reasoning=f"Downgraded temporal signal: {strength_reasoning} A second metric was not aligned across the endpoints.",
+        hypotheses=hypotheses,
+        falsification_tests=tests,
+        metrics={
+            "periods": [start.period, end.period],
+            "reported_gnpa": [safe_round(start.value), safe_round(end.value)] if metric == "reported_gnpa" else [],
+            "single_metric": metric,
+            "single_metric_label": metric_label,
+            "single_metric_values": [safe_round(start.value), safe_round(end.value)],
+            "write_off_rate": [],
+            "writeoff_adjusted_gnpa": [],
+            "headline_improvement": safe_round(-change),
+            "adjusted_improvement": None,
+            "secondary_metric": "",
+            "secondary_label": "Secondary metric unavailable",
+            "secondary_values": [],
+        },
+        stages=("Resolve company identity", "Discover public sources", "Verify quotes", "Calculate temporal change", "Challenge hypotheses", "Prepare auditable report"),
+        notice=f"LIVE PUBLIC-SOURCE MODE — a downgraded temporal report was assembled from verified current and historical {metric_label} evidence; secondary-metric coverage was insufficient.",
+        claims=claims,
+        conflicts=conflicts,
+        events=events,
+    )
+    validate_report(report)
+    return report
+
+
 def run_live_research(
     query: str,
     mode: str = "live",
@@ -713,6 +919,19 @@ def run_live_research(
         return _run_insurer_research(identity, mode, evidence, facts, source_documents, warnings, ai_provider)
 
     gnpa = _series(facts, "reported_gnpa")
+    if len(gnpa) < 2:
+        for standalone_metric in ("nnpa", "write_off_rate", "credit_cost", "provision_coverage"):
+            if len(_series(facts, standalone_metric)) >= 2:
+                return _run_gnpa_temporal_research(
+                    identity,
+                    mode,
+                    evidence,
+                    facts,
+                    source_documents,
+                    warnings,
+                    metric=standalone_metric,
+                )
+        return _report_without_discovery(identity, mode, evidence, facts, source_documents, warnings)
     secondary_metric = "write_off_rate"
     secondary = _series(facts, secondary_metric)
     if len(secondary) < 2:
@@ -725,6 +944,8 @@ def run_live_research(
                 secondary_metric = candidate_metric
                 secondary = candidate_series
                 break
+    if len(secondary) < 2:
+        return _run_gnpa_temporal_research(identity, mode, evidence, facts, source_documents, warnings)
     common_periods = sorted(
         set(fact.period for fact in gnpa).intersection(fact.period for fact in secondary),
         key=_period_key,
@@ -737,8 +958,8 @@ def run_live_research(
         secondary_by_period = {fact.period: fact for fact in secondary}
         gnpa = [gnpa_by_period[period] for period in common_periods]
         secondary = [secondary_by_period[period] for period in common_periods]
-    if len(gnpa) < 2 or len(secondary) < 2 or len(common_periods) < 2:
-        return _report_without_discovery(identity, mode, evidence, facts, source_documents, warnings)
+    if len(common_periods) < 2:
+        return _run_gnpa_temporal_research(identity, mode, evidence, facts, source_documents, warnings)
 
     gnpa_start, gnpa_end = gnpa[0], gnpa[-1]
     writeoff_start, writeoff_end = secondary[0], secondary[-1]

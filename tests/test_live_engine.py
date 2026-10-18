@@ -41,6 +41,18 @@ class FakeAI:
         return []
 
 
+class GnpaOnlyAI:
+    def extract_facts(self, document, metrics):
+        if "q1" in document.url:
+            period, value = "Q1 FY25", 1.10
+        else:
+            period, value = "Q2 FY25", 0.70
+        return [{"metric": "reported_gnpa", "value": value, "unit": "%", "period": period, "quote": document.text, "page": 1}]
+
+    def generate_hypotheses(self, context):
+        return []
+
+
 class InsurerSearch(FakeSearch):
     def search(self, query: str, max_results: int = 8):
         return [
@@ -101,6 +113,20 @@ class LiveEngineTests(unittest.TestCase):
         self.assertGreaterEqual(len(report.conflicts), 1)
         self.assertTrue(all(item.verification_status in {"verified", "normalized_match"} for item in report.evidence))
         self.assertTrue(any(event.action == "run_red_team" for event in report.events))
+
+    def test_live_engine_promotes_verified_gnpa_temporal_signal_without_secondary_metric(self):
+        report = run_live_research(
+            "HDFCBANK",
+            search_provider=FakeSearch(),
+            fetcher=FakeFetcher(),
+            ai_provider=GnpaOnlyAI(),
+        )
+        self.assertNotIn("No strong discovery found", report.discovery)
+        self.assertIn("temporal", report.discovery.lower())
+        self.assertEqual(report.metrics["secondary_metric"], "")
+        self.assertEqual(len(report.numbers), 2)
+        self.assertTrue(any(h.status == "rejected" for h in report.hypotheses))
+        self.assertEqual(len(report.claims), 3)
 
     def test_live_engine_with_missing_search_configuration_withholds_discovery(self):
         report = run_live_research(

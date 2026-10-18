@@ -70,6 +70,9 @@ function lineChart(metrics) {
     { label: secondaryLabel, values: metrics.writeoff_adjusted_gnpa || [], color: "#73e6dc" },
     { label: "Peer average", values: metrics.peer_average_gnpa || [], color: "#ffb86b" },
   ].filter((item) => Array.isArray(item.values) && item.values.length > 0);
+  if (!series.length && Array.isArray(metrics.single_metric_values) && metrics.single_metric_values.length > 0) {
+    series.push({ label: metrics.single_metric_label || "Verified metric", values: metrics.single_metric_values, color: "#c9f36b" });
+  }
   if (!periods.length || !series.length) {
     return `<div class="chart-empty">Not enough verified comparable periods to draw a time-series chart.</div>`;
   }
@@ -100,11 +103,27 @@ function calculationTiles(report) {
   if (Array.isArray(metrics.reported_gnpa) && metrics.reported_gnpa.length > 0) {
     const secondary = Array.isArray(metrics.secondary_values) && metrics.secondary_values.length > 0 ? metrics.secondary_values : metrics.write_off_rate;
     const secondaryLabel = metrics.secondary_label || "Write-off rate";
+    if (!secondary?.length) {
+      return [
+        ["Headline GNPA", `${formatNumber(metrics.reported_gnpa[0])}% → ${formatNumber(metrics.reported_gnpa.at(-1))}%`, "reported"],
+        ["Temporal change", `${formatNumber(metrics.headline_improvement)} pp`, "latest − earliest"],
+        ["Verified periods", formatNumber(metrics.periods?.length, ""), "comparable history"],
+        ["Secondary metric", "Unavailable", "coverage gap"],
+      ];
+    }
     return [
       ["Headline GNPA", `${formatNumber(metrics.reported_gnpa[0])}% → ${formatNumber(metrics.reported_gnpa.at(-1))}%`, "reported"],
       ["Adjusted comparison", `${formatNumber(metrics.adjusted_improvement)} pp`, `${metrics.secondary_label || "write-off"} adjusted`],
       [secondaryLabel, secondary?.length ? `${formatNumber(secondary[0])}% → ${formatNumber(secondary.at(-1))}%` : "Not available", secondary?.length ? "observation window" : "coverage gap"],
       ["Loan-book growth", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book[0])} → ${formatNumber(metrics.loan_book.at(-1))}` : "Not available", metrics.loan_book?.length ? `${formatNumber(metrics.loan_book.at(-1) / metrics.loan_book[0] * 100 - 100)}% total` : "coverage gap"],
+    ];
+  }
+  if (Array.isArray(metrics.single_metric_values) && metrics.single_metric_values.length > 0) {
+    return [
+      [metrics.single_metric_label || "Verified metric", `${formatNumber(metrics.single_metric_values[0])}% → ${formatNumber(metrics.single_metric_values.at(-1))}%`, "verified periods"],
+      ["Temporal change", `${formatNumber(metrics.headline_improvement)} pp`, "latest − earliest"],
+      ["Verified periods", formatNumber(metrics.periods?.length, ""), "comparable history"],
+      ["Secondary metric", "Unavailable", "coverage gap"],
     ];
   }
   if (Array.isArray(metrics.premium_growth) && metrics.premium_growth.length > 0) {
@@ -165,7 +184,7 @@ function renderReport(report) {
       <article class="report-card"><div class="report-label">Why it matters</div><ul class="why-list">${report.why_it_matters.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article>
       <article class="report-card score-panel"><div><div class="report-label">Evidence strength</div><div class="big-score">${escapeHtml(report.evidence_strength)} <span>signal</span></div></div><p class="score-copy">${escapeHtml(report.strength_reasoning)}</p><div class="score-copy">${passedTests} / ${report.falsification_tests.length} falsification tests survived.</div></article>
        <article class="report-card full"><div class="report-label">Key numbers</div><div class="metric-grid">${tiles.map(([title, value, note]) => `<div class="metric-tile"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(note)}</em></div>`).join("")}</div></article>
-       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>Reported GNPA</span><span>${escapeHtml(metrics.secondary_label || "Write-off adjusted")}</span><span>Peer average</span></div></article>
+       <article class="report-card full"><div class="report-label">The divergence over time</div><div class="chart-wrap">${lineChart(metrics)}</div><div class="chart-legend"><span>${escapeHtml(metrics.single_metric_label || "Reported GNPA")}</span><span>${escapeHtml(metrics.single_metric_values ? "Secondary metric unavailable" : (metrics.secondary_label || "Write-off adjusted"))}</span><span>Peer average</span></div></article>
       <article class="report-card full"><div class="report-label">Timeline</div><div class="timeline">${report.timeline.map((event) => `<div class="timeline-item ${event.tone === "challenge" ? "challenge" : ""}"><small>${escapeHtml(event.period)}</small><strong>${escapeHtml(event.label)}</strong><p>${escapeHtml(event.detail)}</p></div>`).join("")}</div></article>
        <article class="report-card full"><div class="report-label">Evidence ledger · click any claim to open its source</div><div class="evidence-list">${renderEvidence(report.evidence)}</div></article>
        <article class="report-card full"><div class="report-label">Claims ledger · every major conclusion has linked evidence</div><div class="claims-list">${renderClaims(report.claims || [], report.evidence)}</div></article>
