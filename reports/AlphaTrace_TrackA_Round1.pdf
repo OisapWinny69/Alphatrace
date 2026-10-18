@@ -1,0 +1,1360 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >>
+endobj
+4 0 obj
+<< /Type /Pages /Kids [6 0 R 12 0 R] /Count 2 >>
+endobj
+5 0 obj
+<< /Length 10275 >>
+stream
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 805.19 Td
+(ATMOS 2026  |  BITS PILANI, HYDERABAD CAMPUS  |  ROUND 1) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F2 20.50 Tf
+38.00 774.39 Td
+(AlphaTrace) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 9.20 Tf
+38.00 759.69 Td
+(An evidence-first autonomous financial research investigator) Tj
+ET
+0.080 0.360 0.340 rg
+439.28 760.89 118.00 42.00 re f
+1.000 1.000 1.000 rg
+BT
+/F2 7.20 Tf
+451.28 783.69 Td
+(TRACK A) Tj
+ET
+0.890 0.960 0.940 rg
+BT
+/F1 5.20 Tf
+451.28 772.69 Td
+(BANKING | NBFCs | FINANCIAL SERVICES) Tj
+ET
+0.910 0.920 0.910 RG
+0.80 w
+38.00 749.89 m 557.28 749.89 l S
+0.340 0.390 0.430 rg
+BT
+/F2 6.50 Tf
+512.28 15.50 Td
+(01 / 02) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 729.19 Td
+(THE IDEA) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+72.26 731.69 m 338.00 731.69 l S
+0.100 0.130 0.160 rg
+BT
+/F1 8.15 Tf
+38.00 714.74 Td
+(Given only a NIFTY 50 company, AlphaTrace decides which financial) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 8.15 Tf
+38.00 704.54 Td
+(relationships are worth investigating. It turns public filings, peer) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 8.15 Tf
+38.00 694.34 Td
+(disclosures and independent sector evidence into one auditable discovery -) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 8.15 Tf
+38.00 684.14 Td
+(not a finance chatbot, news summary or investment recommendation.) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 8.15 Tf
+38.00 663.74 Td
+(The problem is fragmentation: a company can describe improving asset) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 8.15 Tf
+38.00 653.54 Td
+(quality while the flow of stress, its peers, or an external source tells a) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 8.15 Tf
+38.00 643.34 Td
+(different story. A single-document summariser cannot reliably expose that) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 8.15 Tf
+38.00 633.14 Td
+(relationship.) Tj
+ET
+0.080 0.360 0.340 rg
+363.00 649.89 194.00 86.00 re f
+0.860 0.960 0.930 rg
+BT
+/F2 6.70 Tf
+376.00 717.19 Td
+(COMPUTE-FIRST DIFFERENTIATOR) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 700.89 Td
+(The pipeline computes a time-indexed grid) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 691.09 Td
+(of metrics first, detects a divergence) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 681.29 Td
+(second, and asks the model to explain only) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 671.49 Td
+(validated patterns. The anomaly is found) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 661.69 Td
+(by arithmetic; prose cannot invent the) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F1 8.00 Tf
+376.00 651.89 Td
+(number or URL.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 617.19 Td
+(RESEARCH PIPELINE) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+101.81 619.69 m 595.28 619.69 l S
+0.340 0.390 0.430 rg
+BT
+/F1 7.70 Tf
+38.00 603.19 Td
+(The same sequential coordinator drives offline fixtures and live public-source runs. Each stage emits inspectable artefacts; rejected) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.70 Tf
+38.00 593.99 Td
+(hypotheses and missing coverage remain visible.) Tj
+ET
+0.965 0.970 0.965 rg
+38.00 529.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+38.00 529.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+45.00 554.79 Td
+(1  INPUT + RESOLVE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+45.00 543.29 Td
+(Company / symbol -> identity,) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+45.00 535.59 Td
+(model, peers) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+161.50 543.89 Td
+(>) Tj
+ET
+0.965 0.970 0.965 rg
+168.00 529.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+168.00 529.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+175.00 554.79 Td
+(2  PLAN) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+175.00 543.29 Td
+(Metric pack, periods, source) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+175.00 535.59 Td
+(queries) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+291.50 543.89 Td
+(>) Tj
+ET
+0.965 0.970 0.965 rg
+298.00 529.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+298.00 529.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+305.00 554.79 Td
+(3  DISCOVER) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+305.00 543.29 Td
+(Candidate filings, peers, RBI,) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+305.00 535.59 Td
+(ratings) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+421.50 543.89 Td
+(>) Tj
+ET
+0.965 0.970 0.965 rg
+428.00 529.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+428.00 529.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+435.00 554.79 Td
+(4  VERIFY) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+435.00 543.29 Td
+(Fetch, parse, normalize,) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+435.00 535.59 Td
+(quote-check) Tj
+ET
+0.860 0.930 0.910 rg
+38.00 471.89 122.00 38.00 re f
+0.080 0.360 0.340 RG
+0.80 w
+38.00 471.89 122.00 38.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.10 Tf
+45.00 496.79 Td
+(5  CALCULATE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+45.00 485.29 Td
+(Derived ratios and divergence) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+45.00 477.59 Td
+(scores) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+161.50 485.89 Td
+(>) Tj
+ET
+0.965 0.970 0.965 rg
+168.00 471.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+168.00 471.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+175.00 496.79 Td
+(6  HYPOTHESIZE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+175.00 485.29 Td
+(Competing explanations with) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+175.00 477.59 Td
+(evidence IDs) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+291.50 485.89 Td
+(>) Tj
+ET
+0.965 0.970 0.965 rg
+298.00 471.89 122.00 38.00 re f
+0.910 0.920 0.910 RG
+0.80 w
+298.00 471.89 122.00 38.00 re S
+0.100 0.130 0.160 rg
+BT
+/F2 6.10 Tf
+305.00 496.79 Td
+(7  CHALLENGE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+305.00 485.29 Td
+(Independent corroboration +) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+305.00 477.59 Td
+(conflicts) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 9.00 Tf
+421.50 485.89 Td
+(>) Tj
+ET
+0.860 0.930 0.910 rg
+428.00 471.89 122.00 38.00 re f
+0.080 0.360 0.340 RG
+0.80 w
+428.00 471.89 122.00 38.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.10 Tf
+435.00 496.79 Td
+(8  REPORT) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 6.60 Tf
+435.00 485.29 Td
+(Falsify, rank, validate, render) Tj
+ET
+0.080 0.360 0.340 RG
+0.80 w
+489.00 529.89 m 489.00 509.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 7.00 Tf
+486.00 515.89 Td
+(v) Tj
+ET
+0.080 0.360 0.340 RG
+0.80 w
+99.00 471.89 m 99.00 452.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 7.00 Tf
+96.00 459.89 Td
+(v) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+223.00 442.09 Td
+(If evidence is insufficient, return to planning or report: No strong discovery found.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 410.19 Td
+(DISCOVERY MECHANISM) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+108.38 412.69 m 290.00 412.69 l S
+0.100 0.130 0.160 rg
+BT
+/F1 7.70 Tf
+38.00 396.19 Td
+(The first Track A pack asks whether headline asset-quality) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.70 Tf
+38.00 387.09 Td
+(improvement is supported by the underlying flow of stress. The) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.70 Tf
+38.00 377.99 Td
+(lens library is reusable; the resolver selects the applicable pack) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.70 Tf
+38.00 368.89 Td
+(for Bank, NBFC, Insurer or Holdco.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 347.54 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 347.54 Td
+(Stock vs flow: GNPA with NNPA, write-offs, credit cost or provision) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 339.04 Td
+(coverage.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 329.34 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 329.34 Td
+(Self vs peer: distinguish a company-specific signal from sector) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 320.84 Td
+(normalization.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 311.14 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 311.14 Td
+(Narrative vs number, segment vs aggregate, and entity vs) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 302.64 Td
+(counterparty where data permits.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 292.94 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 292.94 Td
+(Temporal persistence: align periods, detect when the relationship) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 284.44 Td
+(changed, and test base effects.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+319.00 410.19 Td
+(CONFIRMED NOW / FINALS NEXT) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+415.64 412.69 m 557.00 412.69 l S
+0.960 0.940 0.890 rg
+319.00 287.89 238.00 116.00 re f
+0.880 0.840 0.750 RG
+0.60 w
+319.00 287.89 238.00 116.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.40 Tf
+329.00 385.49 Td
+(CONFIRMED IN REPOSITORY) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.10 Tf
+329.00 372.79 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 372.79 Td
+(Offline end-to-end research engine and dashboard.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.10 Tf
+329.00 363.79 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 363.79 Td
+(Deterministic calculations, typed report objects, claim) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 355.59 Td
+(ledger and SQLite replay.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.10 Tf
+329.00 346.59 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 346.59 Td
+(Public URL validation, bounded retrieval/cache, page-aware) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 338.39 Td
+(parsing and quote verification.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.10 Tf
+329.00 329.39 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 329.39 Td
+(Conservative live mode that downgrades or withholds weak) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+339.00 321.19 Td
+(findings.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.40 Tf
+329.00 267.49 Td
+(FINALS WORK) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.20 Tf
+329.00 255.69 Td
+(Broaden peer/source coverage, metric packs and cold) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.20 Tf
+329.00 247.09 Td
+(unseen-company validation; keep every limitation explicit.) Tj
+ET
+0.910 0.920 0.910 RG
+0.80 w
+38.00 176.89 m 557.28 176.89 l S
+0.340 0.390 0.430 rg
+BT
+/F3 7.10 Tf
+38.00 157.79 Td
+(Design rule: deterministic code owns arithmetic, source identity, quote status, independence metadata, conflict classification and final schema validation.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.80 Tf
+38.00 137.09 Td
+(Public sources only  |  No investment recommendations  |  Company-specific conclusions are never hard-coded) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F2 6.50 Tf
+38.00 15.50 Td
+(ALPHATRACE  |  TRACK A  |  IDEA + ARCHITECTURE) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 11275 >>
+stream
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 805.19 Td
+(ATMOS 2026  |  BITS PILANI, HYDERABAD CAMPUS  |  ROUND 1) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F2 20.50 Tf
+38.00 774.39 Td
+(Make every conclusion contestable) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 9.20 Tf
+38.00 759.69 Td
+(Evidence triangulation, output contract, generalisation and delivery plan) Tj
+ET
+0.080 0.360 0.340 rg
+439.28 760.89 118.00 42.00 re f
+1.000 1.000 1.000 rg
+BT
+/F2 7.20 Tf
+451.28 783.69 Td
+(TRACK A) Tj
+ET
+0.890 0.960 0.940 rg
+BT
+/F1 5.20 Tf
+451.28 772.69 Td
+(BANKING | NBFCs | FINANCIAL SERVICES) Tj
+ET
+0.910 0.920 0.910 RG
+0.80 w
+38.00 749.89 m 557.28 749.89 l S
+0.340 0.390 0.430 rg
+BT
+/F2 6.50 Tf
+512.28 15.50 Td
+(02 / 02) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 729.19 Td
+(EVIDENCE + CONTRADICTION) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+124.79 731.69 m 354.00 731.69 l S
+0.100 0.130 0.160 rg
+BT
+/F1 7.75 Tf
+38.00 715.14 Td
+(Search results are candidates, not evidence. A source enters the ledger) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.75 Tf
+38.00 705.89 Td
+(only after public-URL validation, bounded retrieval, parsing and exact or) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.75 Tf
+38.00 696.64 Td
+(controlled-normalized quote verification.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 669.54 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 669.54 Td
+(Every fact stores metric, value, unit, period, scope, source URL,) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 660.99 Td
+(publisher family, tier, page and exact passage.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 651.44 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 651.44 Td
+(Every claim points to evidence IDs and calculation IDs; displayed numbers) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 642.89 Td
+(come from deterministic Python code.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 633.34 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 633.34 Td
+(Independent-family count prevents three company-authored documents from) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 624.79 Td
+(masquerading as three confirmations.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 7.35 Tf
+38.00 615.24 Td
+(-) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 615.24 Td
+(Typed conflicts surface narrative/metric, restatement, scope, timing and) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.35 Tf
+48.00 606.69 Td
+(company/peer mismatches instead of hiding them.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 598.29 Td
+(Evidence ladder) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 585.29 Td
+(T1) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.00 Tf
+68.00 584.89 Td
+(NSE/BSE filings, results, annual reports) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 572.29 Td
+(T2) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.00 Tf
+68.00 571.89 Td
+(Investor presentations and earnings calls) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 559.29 Td
+(T3) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.00 Tf
+68.00 558.89 Td
+(RBI / IRDAI / SEBI independent data) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 546.29 Td
+(T4-T6) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.00 Tf
+68.00 545.89 Td
+(Ratings, peers, counterparties, credible media) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+331.00 729.19 Td
+(SELF-FALSIFICATION) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+398.09 731.69 m 888.28 731.69 l S
+0.080 0.360 0.340 rg
+331.00 548.89 226.00 174.00 re f
+1.000 1.000 1.000 rg
+BT
+/F2 8.00 Tf
+343.00 701.89 Td
+(The leading hypothesis must earn its rating) Tj
+ET
+0.720 0.900 0.860 rg
+BT
+/F2 6.60 Tf
+343.00 684.29 Td
+(T1) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F2 6.80 Tf
+363.00 684.09 Td
+(Sector) Tj
+ET
+0.900 0.960 0.940 rg
+BT
+/F1 6.70 Tf
+363.00 675.19 Td
+(Do most peers show the same divergence?) Tj
+ET
+0.720 0.900 0.860 rg
+BT
+/F2 6.60 Tf
+343.00 657.29 Td
+(T2) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F2 6.80 Tf
+363.00 657.09 Td
+(Accounting) Tj
+ET
+0.900 0.960 0.940 rg
+BT
+/F1 6.70 Tf
+363.00 648.19 Td
+(Could scope, M&A or definition drift explain it?) Tj
+ET
+0.720 0.900 0.860 rg
+BT
+/F2 6.60 Tf
+343.00 630.29 Td
+(T3) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F2 6.80 Tf
+363.00 630.09 Td
+(Base effect) Tj
+ET
+0.900 0.960 0.940 rg
+BT
+/F1 6.70 Tf
+363.00 621.19 Td
+(Does it survive two- and three-year views?) Tj
+ET
+0.720 0.900 0.860 rg
+BT
+/F2 6.60 Tf
+343.00 603.29 Td
+(T4) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F2 6.80 Tf
+363.00 603.09 Td
+(Macro / regulatory) Tj
+ET
+0.900 0.960 0.940 rg
+BT
+/F1 6.70 Tf
+363.00 594.19 Td
+(Does timing align with an industry event?) Tj
+ET
+0.720 0.900 0.860 rg
+BT
+/F2 6.60 Tf
+343.00 576.29 Td
+(T5) Tj
+ET
+1.000 1.000 1.000 rg
+BT
+/F2 6.80 Tf
+363.00 576.09 Td
+(Disclosure change) Tj
+ET
+0.900 0.960 0.940 rg
+BT
+/F1 6.70 Tf
+363.00 567.19 Td
+(Did the company change what it reports?) Tj
+ET
+0.820 0.940 0.910 rg
+BT
+/F3 6.50 Tf
+343.00 557.39 Td
+(PASS / FAIL / INCONCLUSIVE is evidence, not decoration.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 517.19 Td
+(ILLUSTRATIVE FINAL REPORT OBJECT) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+151.06 519.69 m 595.28 519.69 l S
+0.340 0.390 0.430 rg
+BT
+/F1 7.50 Tf
+38.00 503.39 Td
+(The renderer receives one validated object with all eight required elements. The sketch below shows the shape, not a researched company) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.50 Tf
+38.00 494.49 Td
+(result or fabricated figure.) Tj
+ET
+0.965 0.970 0.965 rg
+38.00 311.89 519.28 167.00 re f
+0.910 0.920 0.910 RG
+0.70 w
+38.00 311.89 519.28 167.00 re S
+1.000 1.000 1.000 rg
+46.00 434.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+46.00 434.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+53.00 458.69 Td
+(1  DISCOVERY) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+53.00 447.09 Td
+([one clear non-obvious finding]) Tj
+ET
+1.000 1.000 1.000 rg
+301.64 434.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+301.64 434.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+308.64 458.69 Td
+(2  WHY IT MATTERS) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+308.64 447.09 Td
+([3-5 significance bullets]) Tj
+ET
+1.000 1.000 1.000 rg
+46.00 394.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+46.00 394.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+53.00 418.69 Td
+(3  EVIDENCE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+53.00 407.09 Td
+([independent sources + clickable links]) Tj
+ET
+1.000 1.000 1.000 rg
+301.64 394.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+301.64 394.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+308.64 418.69 Td
+(4  TIMELINE) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+308.64 407.09 Td
+([when the change emerged]) Tj
+ET
+1.000 1.000 1.000 rg
+46.00 354.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+46.00 354.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+53.00 378.69 Td
+(5  NUMBERS) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+53.00 367.09 Td
+([formula -> inputs -> result]) Tj
+ET
+1.000 1.000 1.000 rg
+301.64 354.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+301.64 354.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+308.64 378.69 Td
+(6  COUNTERARGUMENT) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+308.64 367.09 Td
+([strongest alternative / conflict]) Tj
+ET
+1.000 1.000 1.000 rg
+46.00 314.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+46.00 314.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+53.00 338.69 Td
+(7  FALSIFICATION) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+53.00 327.09 Td
+([future condition that changes view]) Tj
+ET
+1.000 1.000 1.000 rg
+301.64 314.89 247.64 36.00 re f
+0.910 0.920 0.910 RG
+0.50 w
+301.64 314.89 247.64 36.00 re S
+0.080 0.360 0.340 rg
+BT
+/F2 6.20 Tf
+308.64 338.69 Td
+(8  STRENGTH) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.80 Tf
+308.64 327.09 Td
+([Strong / Moderate / Weak + why]) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F3 6.80 Tf
+46.00 323.09 Td
+(A click on any major claim opens its document, page, passage, period and calculation trace.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 278.19 Td
+(GENERALITY) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+78.83 280.69 m 354.00 280.69 l S
+0.100 0.130 0.160 rg
+BT
+/F1 7.55 Tf
+38.00 264.34 Td
+(Constants: typed schemas, source policy, quote checks, calculation engine,) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.55 Tf
+38.00 255.34 Td
+(conflict types, five tests and report contract. Dynamic at runtime: company) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.55 Tf
+38.00 246.34 Td
+(identity, business model, peers, periods, source plan, metric pack and) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.55 Tf
+38.00 237.34 Td
+(hypotheses.) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.55 Tf
+38.00 199.34 Td
+(A resolver classifies Bank / NBFC / Insurer / Holdco and selects a) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.55 Tf
+38.00 190.34 Td
+(compatible pack. Missing disclosures reduce evidence strength or stop a) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F1 7.55 Tf
+38.00 181.34 Td
+(conclusion; a new company does not require a new answer template.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+331.00 278.19 Td
+(TOOLS + DATA) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+378.40 280.69 m 888.28 280.69 l S
+0.965 0.970 0.965 rg
+331.00 178.89 226.00 93.00 re f
+0.080 0.360 0.340 rg
+BT
+/F2 6.40 Tf
+341.00 253.49 Td
+(STACK) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.05 Tf
+341.00 240.84 Td
+(Python 3.12.8; explicit sequential coordinator; vanilla) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.05 Tf
+341.00 232.49 Td
+(HTML/CSS/JS; SQLite; standard-library HTTP/HTML parsing;) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.05 Tf
+341.00 224.14 Td
+(Docker Poppler boundary for PDFs; optional Tavily search) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.05 Tf
+341.00 215.79 Td
+(and structured OpenAI-compatible provider.) Tj
+ET
+0.340 0.390 0.430 rg
+BT
+/F3 6.50 Tf
+341.00 195.39 Td
+(No multi-agent framework is required to make the trail auditable.) Tj
+ET
+0.080 0.360 0.340 rg
+BT
+/F2 6.70 Tf
+38.00 150.19 Td
+(BUILD PLAN TO FINALS) Tj
+ET
+0.910 0.920 0.910 RG
+0.50 w
+111.66 152.69 m 595.28 152.69 l S
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 135.29 Td
+(18-19 OCT) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+112.00 134.79 Td
+(Freeze Round 1 report; run offline end-to-end checks; review source and limitation wording.) Tj
+ET
+0.910 0.920 0.910 RG
+0.45 w
+38.00 127.89 m 557.28 127.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 113.29 Td
+(20-21 OCT) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+112.00 112.79 Td
+(Broaden peer retrieval and independent-family scoring; extend bank/NBFC/insurer metric coverage.) Tj
+ET
+0.910 0.920 0.910 RG
+0.45 w
+38.00 105.89 m 557.28 105.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 91.29 Td
+(22 OCT) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+112.00 90.79 Td
+(Harden temporal alignment, typed contradictions and five falsification tests; preserve weak-result fallback.) Tj
+ET
+0.910 0.920 0.910 RG
+0.45 w
+38.00 83.89 m 557.28 83.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 69.29 Td
+(23-24 OCT) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+112.00 68.79 Td
+(Cold-run unseen NIFTY 50 and other listed Track A companies; Docker build; cache a recovery run; rehearse demo.) Tj
+ET
+0.910 0.920 0.910 RG
+0.45 w
+38.00 61.89 m 557.28 61.89 l S
+0.080 0.360 0.340 rg
+BT
+/F2 6.60 Tf
+38.00 47.29 Td
+(25 OCT) Tj
+ET
+0.100 0.130 0.160 rg
+BT
+/F1 7.10 Tf
+112.00 46.79 Td
+(Finals: live judge-selected company, discovery, evidence trail, counterargument and falsification condition.) Tj
+ET
+0.910 0.920 0.910 RG
+0.45 w
+38.00 39.89 m 557.28 39.89 l S
+0.340 0.390 0.430 rg
+BT
+/F2 6.30 Tf
+38.00 15.70 Td
+(ALPHATRACE  |  TRACK A  |  ALPHATRACE_TRACKA_ROUND1.PDF  |  PUBLIC SOURCES ONLY) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Annot /Subtype /Link /Rect [68.00 583.89 205.20 592.89] /Border [0 0 0] /A << /S /URI /URI (https://www.nseindia.com/) >> >>
+endobj
+9 0 obj
+<< /Type /Annot /Subtype /Link /Rect [68.00 570.89 208.63 579.89] /Border [0 0 0] /A << /S /URI /URI (https://www.bseindia.com/) >> >>
+endobj
+10 0 obj
+<< /Type /Annot /Subtype /Link /Rect [68.00 557.89 188.05 566.89] /Border [0 0 0] /A << /S /URI /URI (https://www.rbi.org.in/) >> >>
+endobj
+11 0 obj
+<< /Type /Annot /Subtype /Link /Rect [68.00 544.89 225.78 553.89] /Border [0 0 0] /A << /S /URI /URI (https://www.crisilratings.com/) >> >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> /Contents 7 0 R /Annots [8 0 R 9 0 R 10 0 R 11 0 R] >>
+endobj
+13 0 obj
+<< /Type /Catalog /Pages 4 0 R >>
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000000160 00000 n 
+0000000238 00000 n 
+0000000302 00000 n 
+0000010630 00000 n 
+0000010782 00000 n 
+0000022110 00000 n 
+0000022260 00000 n 
+0000022410 00000 n 
+0000022559 00000 n 
+0000022715 00000 n 
+0000022904 00000 n 
+trailer
+<< /Size 14 /Root 13 0 R >>
+startxref
+22954
+%%EOF
